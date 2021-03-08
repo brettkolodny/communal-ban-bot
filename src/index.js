@@ -11,7 +11,6 @@ client.on("ready", () => {
 
 client.on("guildBanAdd", async (guild, user) => {
   if (!whitelist.includes(guild.id)) {
-    console.log(`Non-whitelisted server tried to use bot: ${guild.id}`);
     return;
   }
 
