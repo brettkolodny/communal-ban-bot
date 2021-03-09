@@ -3,10 +3,26 @@ const whitelist = require("./whitelist");
 
 const botBanReason = "Communal Mod: User was banned from";
 
+const BREADID = "241040941073432577";
+
 const client = new Discord.Client();
 
 client.on("ready", () => {
   console.log("Ready to ban");
+});
+
+client.on("message", (message) => {
+  const [command, banId] = message.content.split(" ");
+  if (command == "!ban" && message.author.id == BREADID) {
+    client.guilds.cache.forEach((guild) => {
+      guild.members.ban(banId, {
+        days: 1,
+        reason: `${botBanReason} direct message by Brett`,
+      });
+
+      message.reply(`Banned from ${guild.name}`);
+    });
+  }
 });
 
 client.on("guildBanAdd", async (guild, user) => {
