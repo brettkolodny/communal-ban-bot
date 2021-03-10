@@ -45,21 +45,16 @@ client.on("message", async (message) => {
     }
 
     client.guilds.cache.forEach((guild) => {
+      message.reply(`Banning from ${guild.name}`);
+
       guild.members
         .ban(banId, {
           days: 1,
-          reason: `${botBanReason} direct message by ${message.author.username}, ID: ${senderId}`,
+          reason: `${botBanReason} command by ${message.author.username}, ID: ${senderId}`,
         })
         .catch((error) => {
+          message.reply(`There was an error banning from ${guild.name}`);
           console.log(error);
-          return true;
-        })
-        .then((error) => {
-          if (error) {
-            message.reply("There was an error");
-          } else {
-            message.reply(`Banned from ${guild.name}`);
-          }
         });
     });
   }
