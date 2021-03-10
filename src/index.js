@@ -48,7 +48,7 @@ client.on("message", async (message) => {
       guild.members
         .ban(banId, {
           days: 1,
-          reason: `${botBanReason} direct message by Brett`,
+          reason: `${botBanReason} direct message by ${message.author.username}, ID: ${senderId}`,
         })
         .catch((error) => {
           console.log(error);
