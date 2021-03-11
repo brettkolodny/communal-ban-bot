@@ -20,7 +20,7 @@ client.on("message", async (message) => {
 
   if (senderId == client.user.id) return;
 
-  const [command, arg] = message.content.trim().split(" ");
+  const [command, ...args] = message.content.trim().split(" ");
 
   if (command == "!ban") {
     let isWhitelisted = false;
@@ -53,13 +53,19 @@ client.on("message", async (message) => {
       return;
     }
 
+    let [banId, ...reason] = args;
+
+    reason = reason.join(" ");
+
     client.guilds.cache.forEach((guild) => {
       message.reply(`Banning from ${guild.name}`);
 
       guild.members
-        .ban(arg, {
+        .ban(banId, {
           days: 1,
-          reason: `${botBanReason} command by ${message.author.username}, ID: ${senderId}`,
+          reason: `${botBanReason} command by ${
+            message.author.username
+          }<${senderId}> Reason: ${reason ? reason : "No reason given."}`,
         })
         .catch((error) => {
           message.reply(`There was an error banning from ${guild.name}`);
@@ -67,7 +73,7 @@ client.on("message", async (message) => {
         });
     });
   } else if (command == "!help") {
-    if (arg == "ban") {
+    if (args[0] == "ban") {
       message.reply(
         "\n**Useage**\n" +
           "This bot works passively by listening for bans on whitelisted servers and then performing the same ban on all other servers it is on.\n\n" +
@@ -78,7 +84,7 @@ client.on("message", async (message) => {
           "\n**NOTE**\n" +
           "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
       );
-    } else if (arg == "servers") {
+    } else if (args[0] == "servers") {
     } else {
       message.reply(
         "**Available Commands**\n\n" +
