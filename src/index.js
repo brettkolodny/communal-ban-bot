@@ -28,8 +28,13 @@ client.on("message", async (message) => {
     const botGuilds = Array.from(client.guilds.cache);
 
     for (let [id, guild] of botGuilds) {
+      let member;
       if (whitelist.includes(id)) {
-        const member = await guild.members.fetch(senderId);
+        try {
+          member = await guild.members.fetch(senderId);
+        } catch (e) {
+          continue;
+        }
 
         if (
           member &&
