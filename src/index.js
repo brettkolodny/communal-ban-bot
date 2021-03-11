@@ -16,7 +16,7 @@ client.on("message", async (message) => {
 
   if (senderId == client.user.id) return;
 
-  const [command, banId] = message.content.split(" ");
+  const [command, arg] = message.content.trim().split(" ");
 
   if (command == "!ban") {
     let isWhitelisted = false;
@@ -48,7 +48,7 @@ client.on("message", async (message) => {
       message.reply(`Banning from ${guild.name}`);
 
       guild.members
-        .ban(banId, {
+        .ban(arg, {
           days: 1,
           reason: `${botBanReason} command by ${message.author.username}, ID: ${senderId}`,
         })
@@ -57,6 +57,48 @@ client.on("message", async (message) => {
           console.log(error);
         });
     });
+  } else if (command == "!help") {
+    if (arg == "ban") {
+      message.reply(
+        "\n**Useage**\n" +
+          "This bot works passively by listening for bans on whitelisted servers and then performing the same ban on all other servers it is on.\n\n" +
+          "Additionally you can ban any user whether they are on your server or not by using the `ban!` command.\n" +
+          "To use the command, send this bot a direct message with the format: ```ban! <user id>```\n" +
+          "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
+          "After that, you can right click a user and click `Copy ID` to get their unique ID.\n" +
+          "\n**NOTE**\n" +
+          "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+      );
+    } else if (arg == "servers") {
+    } else {
+      message.reply(
+        "**Available Commands**\n\n" +
+          "`!ban <id>`\n" +
+          "`!servers`\n" +
+          "`!help ban`\n" +
+          "\n**NOTE**\n" +
+          "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+      );
+    }
+  } else if (command == "!servers") {
+    const servers = [];
+
+    for (let [_, guild] of Array.from(client.guilds.cache)) {
+      servers.push(guild.name);
+    }
+
+    const serversList =
+      servers.length > 0 ? servers.join("\n") : "This bot is in no servers";
+
+    message.reply(serversList);
+  } else {
+    message.reply(
+      "**This is the Communal Mod bot!**\n" +
+        "The goal of this bot is to help fight scammers by making it so a scammer only needs to be banned on one server to automatically be banned on all the servers this bot is on.\n" +
+        "Enter `!help` for help\n" +
+        "\n**NOTE**\n" +
+        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+    );
   }
 });
 
