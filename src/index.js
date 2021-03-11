@@ -12,6 +12,10 @@ client.on("ready", () => {
 });
 
 client.on("message", async (message) => {
+  if (message.channel.type != "dm") {
+    return;
+  }
+
   const senderId = message.author.id;
 
   if (senderId == client.user.id) return;
