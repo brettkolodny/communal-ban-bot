@@ -137,7 +137,9 @@ client.on("guildBanAdd", async (guild, user) => {
       g.members
         .ban(user.id, {
           days: 1,
-          reason: `${botBanReason} ${guild.name}`,
+          reason: `${botBanReason} ${guild.name} Reason: ${
+            banReason ? banReason : "No reason given"
+          }`,
         })
         .catch((error) => {
           console.log(error);
