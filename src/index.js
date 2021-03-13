@@ -7,6 +7,30 @@ const client = new Discord.Client();
 
 const admin = new Discord.User(client, { id: process.env.ADMIN });
 
+const pendingBans = new Map();
+
+async function isWhitelisted(userId) {
+  const botGuilds = Array.from(client.guilds.cache);
+
+  for (let [id, guild] of botGuilds) {
+    if (whitelist.includes(id)) {
+      try {
+        const member = await guild.members.fetch(userId);
+        if (
+          member &&
+          member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)
+        ) {
+          return true;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+  }
+
+  return false;
+}
+
 client.on("ready", () => {
   console.log("Ready to ban");
 });
@@ -22,31 +46,35 @@ client.on("message", async (message) => {
 
   const [command, ...args] = message.content.trim().split(" ");
 
-  if (command == "!ban") {
-    let isWhitelisted = false;
+  if (pendingBans.has(senderId)) {
+    if (command == "y" || command == "yes") {
+      const [banId, reason] = pendingBans.get(senderId);
 
-    const botGuilds = Array.from(client.guilds.cache);
+      client.guilds.cache.forEach((guild) => {
+        message.reply(`Banning from ${guild.name}`);
 
-    for (let [id, guild] of botGuilds) {
-      let member;
-      if (whitelist.includes(id)) {
-        try {
-          member = await guild.members.fetch(senderId);
-        } catch (e) {
-          continue;
-        }
-
-        if (
-          member &&
-          member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)
-        ) {
-          isWhitelisted = true;
-          break;
-        }
-      }
+        guild.members
+          .ban(banId, {
+            days: 1,
+            reason: `${botBanReason} command by ${
+              message.author.username
+            }<${senderId}> Reason: ${reason ? reason : "No reason given."}`,
+          })
+          .catch((error) => {
+            message.reply(`There was an error banning from ${guild.name}`);
+            console.log(error);
+          });
+      });
+    } else {
+      message.reply("Canceling ban");
     }
 
-    if (!isWhitelisted) {
+    pendingBans.delete(senderId);
+    return;
+  }
+
+  if (command == "!ban") {
+    if (!(await isWhitelisted(senderId))) {
       message.reply("You do not have permission to interact with this bot");
       console.log(`User: ${senderId} attempted to use ban command`);
       admin.dmChannel.send(`User: ${senderId} attempted to use ban command`);
@@ -57,21 +85,12 @@ client.on("message", async (message) => {
 
     reason = reason.join(" ");
 
-    client.guilds.cache.forEach((guild) => {
-      message.reply(`Banning from ${guild.name}`);
+    pendingBans.set(senderId, [banId, reason]);
 
-      guild.members
-        .ban(banId, {
-          days: 1,
-          reason: `${botBanReason} command by ${
-            message.author.username
-          }<${senderId}> Reason: ${reason ? reason : "No reason given."}`,
-        })
-        .catch((error) => {
-          message.reply(`There was an error banning from ${guild.name}`);
-          console.log(error);
-        });
-    });
+    const userToBan = new Discord.User(client, { id: banId });
+    message.reply(
+      `Are you sure you want to ban ${userToBan}?\ntype [y]es to confirm or anything else to cancel.`
+    );
   } else if (command == "!help") {
     if (args[0] == "ban") {
       message.reply(
