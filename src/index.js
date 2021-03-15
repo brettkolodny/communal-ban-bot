@@ -47,7 +47,7 @@ client.on("message", async (message) => {
   const [command, ...args] = message.content.trim().split(" ");
 
   if (pendingBans.has(senderId)) {
-    if (command == "y" || command == "yes") {
+    if (command.toLowerCase() == "y" || command.toLowerCase() == "yes") {
       const [banId, reason] = pendingBans.get(senderId);
 
       client.guilds.cache.forEach((guild) => {
@@ -97,7 +97,7 @@ client.on("message", async (message) => {
         "\n**Useage**\n" +
           "This bot works passively by listening for bans on whitelisted servers and then performing the same ban on all other servers it is on.\n\n" +
           "Additionally you can ban any user whether they are on your server or not by using the `ban!` command.\n" +
-          "To use the command, send this bot a direct message with the format: ```ban! <user id> <reason>```\n" +
+          "To use the command, send this bot a direct message with the format: ```!ban <user id> <reason>```\n" +
           "`<reason>` is optional.\n\n" +
           "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
           "After that, you can right click a user and click `Copy ID` to get their unique ID.\n" +
