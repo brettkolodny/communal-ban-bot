@@ -2,7 +2,7 @@
 
 The purpose of this bot is to propogate bans that originate on whitelisted servers to all other servers the bot is on. 
 
-For tightknit communities that have the same community guidelines this can greatly decrease both the amount of work individual servrs need to do and also the time it takes to respond to scams.
+For tightknit communities that have the same community guidelines this can greatly decrease both the amount of work individual servers need to do and also the time it takes to respond to scams.
 
 **Note**: Instances of this bot are monitored and unauthorized use of it is reported.
 
