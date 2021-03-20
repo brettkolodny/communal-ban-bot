@@ -9,6 +9,32 @@ const admin = new Discord.User(client, { id: process.env.ADMIN });
 
 const pendingBans = new Map();
 
+function banUser(banId, reason, source) {
+  client.guilds.cache.forEach((guild) => {
+    if (source.guild && source.guild.id == guild.id) return;
+
+    if (source.message) {
+      source.message.reply(`Banning from ${guild.name}`);
+    }
+
+    console.log(`Banning ${banId} from ${guild.name}`);
+
+    guild.members
+      .ban(banId, {
+        days: 1,
+        reason: `${botBanReason} ${
+          source.message
+            ? `command by ${source.message.author.username}<${source.message.author.id}>`
+            : `${source.guild.name}`
+        } Reason: ${reason}`,
+      })
+      .catch((error) => {
+        message.reply(`There was an error banning from ${guild.name}`);
+        console.log(`Error: ${error.code}`);
+      });
+  });
+}
+
 async function isWhitelisted(userId) {
   const botGuilds = Array.from(client.guilds.cache);
 
@@ -51,22 +77,8 @@ client.on("message", async (message) => {
       const [banIds, reason] = pendingBans.get(senderId);
 
       banIds.forEach((banId) => {
-        client.guilds.cache.forEach((guild) => {
-          console.log(`Banning ${banId} from ${guild.name}`)
-          message.reply(`Banning from ${guild.name}`);
-  
-          guild.members
-            .ban(banId, {
-              days: 1,
-              reason: `${botBanReason} command by ${message.author.username}<${senderId}> Reason: ${reason}`,
-            })
-            .catch((error) => {
-              message.reply(`There was an error banning from ${guild.name}`);
-              console.log(`Error: ${error.code}`);
-            });
-        });
-      })
-
+        banUser(banId, reason, { message: message });
+      });
     } else {
       message.reply("Canceling ban");
     }
@@ -120,6 +132,7 @@ client.on("message", async (message) => {
           "This bot works passively by listening for bans on whitelisted servers and then performing the same ban on all other servers it is on.\n\n" +
           "Additionally you can ban any user whether they are on your server or not by using the `ban!` command.\n" +
           "To use the command, send this bot a direct message with the format: ```!ban <user id> <reason>```\n" +
+          "You can give one or more `<user id>`\n" +
           "`<reason>` is optional.\n\n" +
           "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
           "After that, you can right click a user and click `Copy ID` to get their unique ID.\n" +
@@ -169,23 +182,8 @@ client.on("guildBanAdd", async (guild, user) => {
     return;
   }
 
-  const botGuilds = client.guilds;
-
-  botGuilds.cache.forEach((g) => {
-    if (guild.id != g.id) {
-      console.log(`Banning ${user.id} on ${g.name}`);
-
-      g.members
-        .ban(user.id, {
-          days: 1,
-          reason: `${botBanReason} ${guild.name} Reason: ${
-            banReason ? banReason : "No reason given"
-          }`,
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
+  banUser(user.id, banReason ? banReason : "No reason given", {
+    guild: guild,
   });
 });
 
