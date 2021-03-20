@@ -130,7 +130,7 @@ client.on("message", async (message) => {
       message.reply(
         "\n**Useage**\n" +
           "This bot works passively by listening for bans on whitelisted servers and then performing the same ban on all other servers it is on.\n\n" +
-          "Additionally you can ban any user whether they are on your server or not by using the `ban!` command.\n" +
+          "Additionally you can ban any user whether they are on your server or not by using the `!ban` command.\n" +
           "To use the command, send this bot a direct message with the format: ```!ban <user id> <reason>```\n" +
           "You can give one or more `<user id>`\n" +
           "`<reason>` is optional.\n\n" +
