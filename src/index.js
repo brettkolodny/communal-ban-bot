@@ -56,9 +56,7 @@ client.on("message", async (message) => {
         guild.members
           .ban(banId, {
             days: 1,
-            reason: `${botBanReason} command by ${
-              message.author.username
-            }<${senderId}> Reason: ${reason ? reason : "No reason given."}`,
+            reason: `${botBanReason} command by ${message.author.username}<${senderId}> Reason: ${reason}`,
           })
           .catch((error) => {
             message.reply(`There was an error banning from ${guild.name}`);
@@ -81,15 +79,40 @@ client.on("message", async (message) => {
       return;
     }
 
-    let [banId, ...reason] = args;
+    let idPattern = /\d{18}/;
 
-    reason = reason.join(" ");
+    let banIds = [];
+    let reason;
 
-    pendingBans.set(senderId, [banId, reason]);
+    console.log(args);
+    console.log(reason);
+    for (let i in args) {
+      console.log(args[i]);
+      if (args[i] == "") {
+        continue;
+      } else if (idPattern.test(args[i])) {
+        banIds.push(args[i]);
+      } else {
+        reason = args.slice(i);
+        break;
+      }
+    }
 
-    const userToBan = new Discord.User(client, { id: banId });
+    console.log(banIds);
+
+    reason = reason ? reason.join(" ") : "No reason given";
+
+    pendingBans.set(senderId, [banIds, reason]);
+
+    let usersToBan = "";
+
+    for (let id of banIds) {
+      const user = new Discord.User(client, { id: id });
+      usersToBan += user.toString() + " ";
+    }
+
     message.reply(
-      `Are you sure you want to ban ${userToBan}?\ntype [y]es to confirm or anything else to cancel.`
+      `Are you sure you want to ban ${usersToBan}?\ntype [y]es to confirm or anything else to cancel.`
     );
   } else if (command == "!help") {
     if (args[0] == "ban") {
