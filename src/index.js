@@ -48,21 +48,25 @@ client.on("message", async (message) => {
 
   if (pendingBans.has(senderId)) {
     if (command.toLowerCase() == "y" || command.toLowerCase() == "yes") {
-      const [banId, reason] = pendingBans.get(senderId);
+      const [banIds, reason] = pendingBans.get(senderId);
 
-      client.guilds.cache.forEach((guild) => {
-        message.reply(`Banning from ${guild.name}`);
+      banIds.forEach((banId) => {
+        client.guilds.cache.forEach((guild) => {
+          console.log(`Banning ${banId} from ${guild.name}`)
+          message.reply(`Banning from ${guild.name}`);
+  
+          guild.members
+            .ban(banId, {
+              days: 1,
+              reason: `${botBanReason} command by ${message.author.username}<${senderId}> Reason: ${reason}`,
+            })
+            .catch((error) => {
+              message.reply(`There was an error banning from ${guild.name}`);
+              console.log(`Error: ${error.code}`);
+            });
+        });
+      })
 
-        guild.members
-          .ban(banId, {
-            days: 1,
-            reason: `${botBanReason} command by ${message.author.username}<${senderId}> Reason: ${reason}`,
-          })
-          .catch((error) => {
-            message.reply(`There was an error banning from ${guild.name}`);
-            console.log(error);
-          });
-      });
     } else {
       message.reply("Canceling ban");
     }
@@ -84,10 +88,7 @@ client.on("message", async (message) => {
     let banIds = [];
     let reason;
 
-    console.log(args);
-    console.log(reason);
     for (let i in args) {
-      console.log(args[i]);
       if (args[i] == "") {
         continue;
       } else if (idPattern.test(args[i])) {
@@ -97,8 +98,6 @@ client.on("message", async (message) => {
         break;
       }
     }
-
-    console.log(banIds);
 
     reason = reason ? reason.join(" ") : "No reason given";
 
