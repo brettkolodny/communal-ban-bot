@@ -35,6 +35,31 @@ function banUser(banId, reason, source) {
   });
 }
 
+function banByUsername(banId, message) {
+  message.reply("Searching for users to ban...");
+
+  client.guilds.cache.forEach(async (guild) => {
+    let user = await new Discord.User(client, { id: banId }).fetch();
+
+    let users = await guild.members
+      .fetch({ query: user.username, limit: 0, force: true })
+      .catch((error) => {
+        console.log(
+          `No users with the same username as ${banId} in ${guild.name}`
+        );
+      });
+
+    if (!users || users.size == 0) {
+      message.reply(`No users with that username in ${guild.name}`);
+      return;
+    }
+
+    users.forEach((user) => {
+      banUser(user.id, "Banned for username", { message: message });
+    });
+  });
+}
+
 async function isWhitelisted(userId) {
   const botGuilds = Array.from(client.guilds.cache);
 
@@ -76,9 +101,13 @@ client.on("message", async (message) => {
     if (command.toLowerCase() == "y" || command.toLowerCase() == "yes") {
       const [banIds, reason] = pendingBans.get(senderId);
 
-      banIds.forEach((banId) => {
-        banUser(banId, reason, { message: message });
-      });
+      if (reason == "Banned for username") {
+        banByUsername(banIds[0], message);
+      } else {
+        banIds.forEach((banId) => {
+          banUser(banId, reason, { message: message });
+        });
+      }
     } else {
       message.reply("Canceling ban");
     }
@@ -125,12 +154,36 @@ client.on("message", async (message) => {
     message.reply(
       `Are you sure you want to ban ${usersToBan}?\ntype [y]es to confirm or anything else to cancel.`
     );
+
+    return;
+  } else if (command == "!username") {
+    if (!(await isWhitelisted(senderId))) {
+      message.reply("You do not have permission to interact with this bot");
+      console.log(`User: ${senderId} attempted to use ban command`);
+      admin.dmChannel.send(`User: ${senderId} attempted to use ban command`);
+      return;
+    }
+
+    let idPattern = /\d{18}/;
+    let banId = args[0];
+
+    if (!idPattern.test(banId)) {
+      message.reply("Invalid ID");
+      return;
+    }
+
+    pendingBans.set(senderId, [[banId], "Banned for username"]);
+
+    const user = new Discord.User(client, { id: banId });
+    message.reply(
+      `Are you sure you want to ban all users with the same username as ${user.toString()}?\ntype [y]es to confirm or anything else to cancel.`
+    );
   } else if (command == "!help") {
     if (args[0] == "ban") {
       message.reply(
         "\n**Useage**\n" +
           "This bot works passively by listening for bans on whitelisted servers and then performing the same ban on all other servers it is on.\n\n" +
-          "Additionally you can ban any user whether they are on your server or not by using the `ban!` command.\n" +
+          "Additionally you can ban any user whether they are on your server or not by using the `!ban` command.\n" +
           "To use the command, send this bot a direct message with the format: ```!ban <user id> <reason>```\n" +
           "You can give one or more `<user id>`\n" +
           "`<reason>` is optional.\n\n" +
@@ -139,13 +192,24 @@ client.on("message", async (message) => {
           "\n**NOTE**\n" +
           "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
       );
-    } else if (args[0] == "servers") {
+    } else if (args[0] == "username") {
+      message.reply(
+        "\n**Useage**\n" +
+          "To use this command, send the bot a direct message with the format ```!username <user id>```\n" +
+          "This will ban all users with similar names on all of the servers the bot is on.\n" +
+          "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
+          "After that, you can right click a user and click `Copy ID` to get their unique ID.\n" +
+          "\n**NOTE**\n" +
+          "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+      );
     } else {
       message.reply(
         "**Available Commands**\n\n" +
-          "`!ban <id>`\n" +
+          "`!ban <user id> <reason>`\n" +
+          "`!username <user id>`\n" +
           "`!servers`\n" +
           "`!help ban`\n" +
+          "`!help username`\n" +
           "\n**NOTE**\n" +
           "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
       );
