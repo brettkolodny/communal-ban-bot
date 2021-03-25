@@ -36,6 +36,7 @@ function banUser(banId, reason, source) {
 }
 
 function unbanUser(banId, reason, message) {
+  reason = `Communal Mod: User was unbanned from command by ${message.author.username}<${message.author.id}> Reason: ${reason}`;
   client.guilds.cache.forEach((guild) => {
     message.reply(`Unbanning ${banId} from ${guild.name}`);
     console.log(`Unbanning ${banId} from ${guild.name}`);
