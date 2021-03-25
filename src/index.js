@@ -7,7 +7,7 @@ const client = new Discord.Client();
 
 const admin = new Discord.User(client, { id: process.env.ADMIN });
 
-const pendingBans = new Map();
+const pendingCommands = new Map();
 
 function banUser(banId, reason, source) {
   client.guilds.cache.forEach((guild) => {
@@ -35,6 +35,18 @@ function banUser(banId, reason, source) {
   });
 }
 
+function unbanUser(banId, reason, message) {
+  client.guilds.cache.forEach((guild) => {
+    message.reply(`Unbanning ${banId} from ${guild.name}`);
+    console.log(`Unbanning ${banId} from ${guild.name}`);
+
+    guild.members.unban(banId, reason).catch((error) => {
+      message.reply(`There was an error unbanning from ${guild.name}`);
+      console.log(`Error: ${error.code}`);
+    });
+  });
+}
+
 function banByUsername(banId, message) {
   message.reply("Searching for users to ban...");
 
@@ -42,7 +54,7 @@ function banByUsername(banId, message) {
     let user = await new Discord.User(client, { id: banId }).fetch();
 
     let users = await guild.members
-      .fetch({ query: user.username, limit: 0, force: true })
+      .fetch({ query: user.username, limit: 100, force: true })
       .catch((error) => {
         console.log(
           `No users with the same username as ${banId} in ${guild.name}`
@@ -97,22 +109,28 @@ client.on("message", async (message) => {
 
   const [command, ...args] = message.content.trim().split(" ");
 
-  if (pendingBans.has(senderId)) {
+  if (pendingCommands.has(senderId)) {
     if (command.toLowerCase() == "y" || command.toLowerCase() == "yes") {
-      const [banIds, reason] = pendingBans.get(senderId);
+      const [banIds, reason, type] = pendingCommands.get(senderId);
 
-      if (reason == "Banned for username") {
-        banByUsername(banIds[0], message);
-      } else {
+      if (type === "ban") {
+        if (reason == "Banned for username") {
+          banByUsername(banIds[0], message);
+        } else {
+          banIds.forEach((banId) => {
+            banUser(banId, reason, { message: message });
+          });
+        }
+      } else if (type === "unban") {
         banIds.forEach((banId) => {
-          banUser(banId, reason, { message: message });
+          unbanUser(banId, reason, message);
         });
       }
     } else {
       message.reply("Canceling ban");
     }
 
-    pendingBans.delete(senderId);
+    pendingCommands.delete(senderId);
     return;
   }
 
@@ -142,7 +160,7 @@ client.on("message", async (message) => {
 
     reason = reason ? reason.join(" ") : "No reason given";
 
-    pendingBans.set(senderId, [banIds, reason]);
+    pendingCommands.set(senderId, [banIds, reason, "ban"]);
 
     let usersToBan = "";
 
@@ -172,12 +190,52 @@ client.on("message", async (message) => {
       return;
     }
 
-    pendingBans.set(senderId, [[banId], "Banned for username"]);
+    pendingCommands.set(senderId, [[banId], "Banned for username", "ban"]);
 
     const user = new Discord.User(client, { id: banId });
     message.reply(
       `Are you sure you want to ban all users with the same username as ${user.toString()}?\ntype [y]es to confirm or anything else to cancel.`
     );
+  } else if (command == "!unban") {
+    if (!(await isWhitelisted(senderId))) {
+      message.reply("You do not have permission to interact with this bot");
+      console.log(`User: ${senderId} attempted to use unban command`);
+      admin.dmChannel.send(`User: ${senderId} attempted to use ban command`);
+      return;
+    }
+
+    let idPattern = /\d{18}/;
+
+    let banIds = [];
+    let reason;
+
+    for (let i in args) {
+      if (args[i] == "") {
+        continue;
+      } else if (idPattern.test(args[i])) {
+        banIds.push(args[i]);
+      } else {
+        reason = args.slice(i);
+        break;
+      }
+    }
+
+    reason = reason ? reason.join(" ") : "No reason given";
+
+    pendingCommands.set(senderId, [banIds, reason, "unban"]);
+
+    let usersToBan = "";
+
+    for (let id of banIds) {
+      const user = new Discord.User(client, { id: id });
+      usersToBan += user.toString() + " ";
+    }
+
+    message.reply(
+      `Are you sure you want to unban ${usersToBan}?\ntype [y]es to confirm or anything else to cancel.`
+    );
+
+    return;
   } else if (command == "!help") {
     if (args[0] == "ban") {
       message.reply(
@@ -202,10 +260,22 @@ client.on("message", async (message) => {
           "\n**NOTE**\n" +
           "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
       );
+    } else if (args[0] == "unban") {
+      message.reply(
+        "\n**Useage**\n" +
+          "To use the command, send this bot a direct message with the format: ```!ban <user id> <reason>```\n" +
+          "You can give one or more `<user id>`\n" +
+          "`<reason>` is optional.\n\n" +
+          "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
+          "After that, you can right click a user and click `Copy ID` to get their unique ID.\n" +
+          "\n**NOTE**\n" +
+          "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+      );
     } else {
       message.reply(
         "**Available Commands**\n\n" +
           "`!ban <user id> <reason>`\n" +
+          "`!unban <user id> <reason>\n" +
           "`!username <user id>`\n" +
           "`!servers`\n" +
           "`!help ban`\n" +
