@@ -9,6 +9,32 @@ const admin = new Discord.User(client, { id: process.env.ADMIN });
 
 const pendingCommands = new Map();
 
+const recentJoins = new Map();
+
+for (const server of whitelist) {
+  recentJoins.set(server, []);
+}
+
+function getUsersJoinedAt(guildId, time, min, max) {
+  let minDate = new Date(time.getTime());
+  minDate.setMinutes(minDate.getMinutes() - min);
+
+  let maxDate = new Date(time.getTime());
+  maxDate.setMinutes(maxDate.getMinutes() + max);
+
+  if (recentJoins.has(guildId)) {
+    let banIds = recentJoins.get(guildId).map(([id, timeJoined]) => {
+      if (minDate <= timeJoined && timeJoined <= maxDate) {
+        banIds.push(id);
+      }
+    })
+
+    return banIds;
+  }
+
+  return [];
+}
+
 function banUser(banId, reason, source) {
   client.guilds.cache.forEach((guild) => {
     if (source.guild && source.guild.id == guild.id) return;
@@ -99,6 +125,12 @@ client.on("ready", () => {
   console.log("Ready to ban");
 });
 
+client.on("guildMemberAdd", (member) => {
+  if (recentJoins.has(member.guild.id)) {
+    recentJoins.get([member.guild.id, member.joinedAt]).push(member);
+  }
+});
+
 client.on("message", async (message) => {
   if (message.channel.type != "dm") {
     return;
@@ -114,6 +146,11 @@ client.on("message", async (message) => {
     if (command.toLowerCase() == "y" || command.toLowerCase() == "yes") {
       const [banIds, reason, type] = pendingCommands.get(senderId);
 
+      if (!banIds || banIds.length == 0) {
+        message.reply("No users to ban");
+        return;
+      }
+      
       if (type === "ban") {
         if (reason == "Banned for username") {
           banByUsername(banIds[0], message);
@@ -175,11 +212,65 @@ client.on("message", async (message) => {
     );
 
     return;
+  } else if (command == "!raid") {
+    if (!(await isWhitelisted(senderId))) {
+      message.reply("You do not have permission to interact with this bot");
+      console.log(`User: ${senderId} attempted to use raid command`);
+      admin.dmChannel.send(`User: ${senderId} attempted to use raid command`);
+      return;
+    }
+
+    let idPattern = /\d{18}/;
+    let [guildId, banId, start, end] = args;
+
+    if (!idPattern.test(guildId) || !idPattern.test(banId)) {
+      message.reply("Invalid Guild ID or User ID");
+      return;
+    }
+
+    try {
+      start = parseInt(start);
+      end = parseInt(end);
+    } catch {
+      message.reply("Start and end time must be numbers");
+      return;
+    }
+
+    let guild = null;
+
+    for (const [_, botGuild] of client.guilds.cache) {
+      if (botGuild.id == guildId) {
+        guild = botGuild;
+        break;
+      }
+    }
+
+    let joinTime = null;
+
+    try {
+      joinTime = guild.member(banId).joinedAt;
+    } catch {
+      message.reply("Member is not in that guild");
+      return;
+    }
+
+    let banIds = getUsersJoinedAt(guildId, joinTime, start, end);
+
+    pendingCommands.set(senderId, [banIds, "Banned during raid", "ban"]);
+
+    let usersToBan = "";
+
+    for (const id of banIds) {
+      usersToBan += ` ${(new Discord.User(client, { id: id }).toString())}`;
+    }
+
+    message.reply(`Are you sure you want to ban${usersToBan}?`)
+
   } else if (command == "!username") {
     if (!(await isWhitelisted(senderId))) {
       message.reply("You do not have permission to interact with this bot");
-      console.log(`User: ${senderId} attempted to use ban command`);
-      admin.dmChannel.send(`User: ${senderId} attempted to use ban command`);
+      console.log(`User: ${senderId} attempted to use username command`);
+      admin.dmChannel.send(`User: ${senderId} attempted to use username command`);
       return;
     }
 
