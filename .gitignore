@@ -115,4 +115,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+src/*.js
+
 .DS_Store
