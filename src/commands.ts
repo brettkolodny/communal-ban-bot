@@ -54,11 +54,13 @@ export async function banCommand(
     usersToBan += user.toString() + " ";
   }
 
-  message.reply(
-    `Are you sure you want to ban ${usersToBan}?\ntype [y]es to confirm or anything else to cancel.`
-  );
-
-  return;
+  const replyMessage = `Are you sure you want to ban ${usersToBan}?\ntype [y]es to confirm or anything else to cancel.`;
+  
+  if (replyMessage.length > 2000) {
+    message.reply(`Too many users to display! Are you sure you want to ban ${banIds.length} users?\ntype [y]es to confirm or anything else to cancel.`);
+  } else {
+    message.reply(replyMessage);
+  }
 }
 
 export async function raidCommand(
@@ -151,7 +153,13 @@ export async function raidCommand(
     usersToBan += ` ${new Discord.User(client, { id: id }).toString()}`;
   }
 
-  message.reply(`Are you sure you want to ban${usersToBan}?`);
+  const replyMessage = `Are you sure you want to ban${usersToBan}?\ntype [y]es to confirm or anything else to cancel.`;
+
+  if (replyMessage.length > 2000) {
+    message.reply(`Too many users to display! Are you sure you want to ban ${banIds.length} users?\ntype [y]es to confirm or anything else to cancel.`);
+  } else {
+    message.reply(replyMessage);
+  }
 }
 
 export async function usernameCommand(
@@ -238,11 +246,13 @@ export async function unbanCommand(
     usersToBan += user.toString() + " ";
   }
 
-  message.reply(
-    `Are you sure you want to unban ${usersToBan}?\ntype [y]es to confirm or anything else to cancel.`
-  );
-
-  return;
+  const replyMessage = `Are you sure you want to unban ${usersToBan}?\ntype [y]es to confirm or anything else to cancel.`;
+  
+  if (replyMessage.length > 2000) {
+    message.reply(`Too many users to display! Are you sure you want to unban ${banIds.length} users?\ntype [y]es to confirm or anything else to cancel.`);
+  } else {
+    message.reply(replyMessage);
+  }
 }
 
 export async function helpCommand(message: Discord.Message, args: string[]) {

@@ -156,18 +156,18 @@ export async function banByUsername(
   banId: ID,
   message: Discord.Message
 ) {
-  const replyMessage = await message.reply("Banning users by username...");
+  await message.reply("Banning users by username...");
+
   let numUsersBanned = 0;
+  const replyMessage = await message.reply(`Total bans: ${numUsersBanned}`);
 
   client.guilds.cache.forEach(async (guild) => {
     let user = await new Discord.User(client, { id: banId }).fetch();
 
     let users = await guild.members
-      .fetch({ query: user.username, limit: 1000, force: true })
+      .fetch({ query: user.username, limit: 500, force: true })
       .catch((error) => {
-        console.log(
-          `No users with the same username as ${banId} in ${guild.name}`
-        );
+        console.log(error)
       });
 
     if (!users || users.size == 0) {
@@ -177,9 +177,7 @@ export async function banByUsername(
 
     users.forEach((user) => {
       banUser(client, user.id, "Banned for username", message);
-      numUsersBanned++;
+      replyMessage.edit(`Total bans: ${++numUsersBanned}`);
     });
   });
-
-  replyMessage.edit(`Total bans: ${++numUsersBanned}`);
 }
