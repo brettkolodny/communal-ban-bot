@@ -66,8 +66,6 @@ export async function getUsersJoinedAt(
         })
       );
 
-      console.log(users.length);
-
       if (res.data.length < 1000) {
         break;
       }
