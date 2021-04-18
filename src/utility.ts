@@ -111,7 +111,7 @@ export function banUser(
     .forEach((guild) => {
       guild.members
         .ban(banId, {
-          days: 1,
+          days: 7,
           reason: `${BOT_BAN_REASON} ${
             source instanceof Discord.Message
               ? `command by ${source.author.username}<${source.author.id}>`
