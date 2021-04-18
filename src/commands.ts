@@ -267,7 +267,7 @@ export async function helpCommand(message: Discord.Message, args: string[]) {
         "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
         "After that, you can right click a user and click `Copy ID` to get their unique ID.\n" +
         "\n**NOTE**\n" +
-        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this bot without permission are reported."
     );
   } else if (args[0] == "username") {
     message.reply(
@@ -277,7 +277,7 @@ export async function helpCommand(message: Discord.Message, args: string[]) {
         "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
         "After that, you can right click a user and click `Copy ID` to get their unique ID.\n" +
         "\n**NOTE**\n" +
-        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this bot without permission are reported."
     );
   } else if (args[0] == "unban") {
     message.reply(
@@ -288,7 +288,7 @@ export async function helpCommand(message: Discord.Message, args: string[]) {
         "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
         "After that, you can right click a user and click `Copy ID` to get their unique ID.\n" +
         "\n**NOTE**\n" +
-        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this bot without permission are reported."
     );
   } else if (args[0] == "raid") {
     message.reply(
@@ -299,19 +299,19 @@ export async function helpCommand(message: Discord.Message, args: string[]) {
         "`<befor>` is the number of minutes before the provided user joined to also search for users to ban\n" +
         "`<after>` is the number of minutes after the provided useer joined to also search for users to ban\n" +
         "\n**NOTE**\n" +
-        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this bot without permission are reported."
     );
   } else {
     message.reply(
       "**Available Commands**\n\n" +
         "`!ban <user id> <reason>`\n" +
-        "`!unban <user id> <reason>\n" +
+        "`!unban <user id> <reason>`\n" +
         "`!username <user id>`\n" +
         "`!servers`\n" +
         "`!help ban`\n" +
         "`!help username`\n" +
         "\n**NOTE**\n" +
-        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this pot without permission are reported."
+        "This bot is monitored. All bans performed by this bot are logged and any attempts to use this bot without permission are reported."
     );
   }
 }
