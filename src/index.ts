@@ -96,7 +96,7 @@ client.on("message", async (message) => {
 });
 
 client.on("guildBanAdd", async (guild, user) => {
-  if (!whitelist.includes(guild.id)) {
+  if (!whitelist.has(guild.id)) {
     return;
   }
 
@@ -110,6 +110,26 @@ client.on("guildBanAdd", async (guild, user) => {
 
   banUser(client, user.id, banReason ? banReason : "No reason given", guild);
 });
+
+client.on("guildMemberAdd", (member) => {
+  if (!whitelist.has(member.guild.id) || whitelist.get(member.guild.id)?.banOnLeave) {
+    return;
+  }
+
+  const blackList = whitelist.get(member.guild.id)?.blackList;
+
+  if (blackList) {
+    const username = member.user.username;
+
+    for (const name of blackList) {
+      if (username.toLowerCase().includes(name)) {
+        banUser(client, member.id, `${BOT_BAN_REASON}: Name on blacklist`, member.guild);
+        return;
+      }
+    }
+  }
+});
+
 
 client.login(process.env.TOKEN).catch(() => {
   console.log("Error logging in");
