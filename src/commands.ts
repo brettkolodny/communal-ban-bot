@@ -293,8 +293,8 @@ export async function helpCommand(message: Discord.Message, args: string[]) {
   } else if (args[0] == "raid") {
     message.reply(
       "\n**Useage**\n" +
-        "To use the command, send this bot a direct message with the format : ```!ban <guild id> <user id> <before> <after>```\n" +
-        "`<guild id>` is the guild where the ban is happening\n" +
+        "To use the command, send this bot a direct message with the format : ```!ban <server id> <user id> <before> <after>```\n" +
+        "`<server id>` is the guild where the ban is happening\n" +
         "`<user id>` is a user in the raid, their time joined is anchor for the command\n" +
         "`<befor>` is the number of minutes before the provided user joined to also search for users to ban\n" +
         "`<after>` is the number of minutes after the provided useer joined to also search for users to ban\n" +
@@ -307,6 +307,7 @@ export async function helpCommand(message: Discord.Message, args: string[]) {
         "`!ban <user id> <reason>`\n" +
         "`!unban <user id> <reason>`\n" +
         "`!username <user id>`\n" +
+        "`!raid <server id> <user id> <before> <after>`\n" +
         "`!servers`\n" +
         "`!help ban`\n" +
         "`!help username`\n" +
