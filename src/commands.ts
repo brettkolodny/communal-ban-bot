@@ -282,7 +282,7 @@ export async function helpCommand(message: Discord.Message, args: string[]) {
   } else if (args[0] == "unban") {
     message.reply(
       "\n**Useage**\n" +
-        "To use the command, send this bot a direct message with the format: ```!ban <user id> <reason>```\n" +
+        "To use the command, send this bot a direct message with the format: ```!unban <user id> <reason>```\n" +
         "You can give one or more `<user id>`\n" +
         "`<reason>` is optional.\n\n" +
         "A users's ID can be obtained by turning on `Developer Mode` at `Settings -> Appearances -> Advanced -> Developer Mode`\n" +
@@ -309,8 +309,11 @@ export async function helpCommand(message: Discord.Message, args: string[]) {
         "`!username <user id>`\n" +
         "`!raid <server id> <user id> <before> <after>`\n" +
         "`!servers`\n" +
+        "\n" +
         "`!help ban`\n" +
+        "`!help unban`\n" +
         "`!help username`\n" +
+        "`!help raid`\n" +
         "\n**NOTE**\n" +
         "This bot is monitored. All bans performed by this bot are logged and any attempts to use this bot without permission are reported."
     );
