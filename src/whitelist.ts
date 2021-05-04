@@ -7,7 +7,7 @@ export const whitelist: Map<string, ServerSettings> = new Map();
 
 // Polkadot
 whitelist.set("722223075629727774", {
-  blackList: ["help", "support", "desk", "tech", "giveaway", "admin", "minaprotocol", "dev", "community", "mod"],
+  blackList: ["help", "support", "desk", "tech", "giveaway", "admin", "minaprotocol", "dev", "community", "mod", "assist"],
   banOnLeave: true
 });
 
