@@ -10,7 +10,7 @@ export async function isWhitelisted(client: Discord.Client, userId: ID) {
   const botGuilds = Array.from(client.guilds.cache);
 
   for (let [id, guild] of botGuilds) {
-    if (whitelist.includes(id)) {
+    if (whitelist.has(id)) {
       try {
         const member = await guild.members.fetch(userId);
         if (
