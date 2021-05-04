@@ -13,7 +13,7 @@ whitelist.set("722223075629727774", {
 
 // Kusama
 whitelist.set("771178421522268191", {
-  blackList: ["help", "support", "desk", "tech", "giveaway", "admin", "minaprotocol", "dev", "community", "mod"],
+  blackList: ["help", "support", "desk", "tech", "giveaway", "admin", "minaprotocol", "dev", "community", "mod", "assist"],
   banOnLeave: true
 });
 
