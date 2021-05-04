@@ -1,5 +1,5 @@
 type ServerSettings = {
-  blackList?: string[];
+  blackList: string[];
   banOnLeave: boolean;
 }
 
@@ -18,4 +18,7 @@ whitelist.set("771178421522268191", {
 });
 
 // Acala
-whitelist.set("709208197549785148", { banOnLeave: false });
+whitelist.set("709208197549785148", {
+  blackList: [],
+  banOnLeave: false 
+});

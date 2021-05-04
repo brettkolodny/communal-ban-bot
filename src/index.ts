@@ -118,7 +118,7 @@ client.on("guildMemberAdd", (member) => {
 
   const blackList = whitelist.get(member.guild.id)?.blackList;
 
-  if (blackList) {
+  if (blackList != undefined && blackList.length > 0) {
     const username = member.user.username;
 
     for (const name of blackList) {
