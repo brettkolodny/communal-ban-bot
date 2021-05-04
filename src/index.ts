@@ -112,7 +112,7 @@ client.on("guildBanAdd", async (guild, user) => {
 });
 
 client.on("guildMemberAdd", (member) => {
-  if (!whitelist.has(member.guild.id) || whitelist.get(member.guild.id)?.banOnLeave) {
+  if (!whitelist.has(member.guild.id)) {
     return;
   }
 
@@ -123,8 +123,14 @@ client.on("guildMemberAdd", (member) => {
 
     for (const name of blackList) {
       if (username.toLowerCase().includes(name)) {
-        banUser(client, member.id, `${BOT_BAN_REASON}: Name on blacklist`, member.guild);
-        return;
+        member.ban(
+          { 
+            days: 7,
+            reason: `${BOT_BAN_REASON}: Username on ${member.guild.name} blacklist`
+          }
+        ).catch(error => {
+          console.log(`Error: ${error.code}`);
+        });
       }
     }
   }
