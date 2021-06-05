@@ -8,5 +8,6 @@
     "skipLibCheck": true,
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
+    "outDir": "./build"
   },
 }
