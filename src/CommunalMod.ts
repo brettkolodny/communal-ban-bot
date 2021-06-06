@@ -24,10 +24,12 @@ export default class CommunalMod {
   private token: string;
   private servers: ServerSettings[] = [];
   private pendingBans: Map<string, PendingBans> = new Map();
+  private adminId: string;
 
   constructor(token: string, adminId: string) {
     this.client = new Discord.Client();
     this.token = token;
+    this.adminId = adminId;
 
     this.client.on("ready", () => {
       if (process.env.NODE_ENV != "prod") {
@@ -43,9 +45,13 @@ export default class CommunalMod {
       this.onGuildBanAdd(guild, user)
     );
 
-    this.client.on("guildMemberAdd", (member) => this.onGuildMemberAddOrUpdate(member));
+    this.client.on("guildMemberAdd", (member) =>
+      this.onGuildMemberAddOrUpdate(member)
+    );
 
-    this.client.on("guildMemberUpdate", (_, member) => this.onGuildMemberAddOrUpdate(member));
+    this.client.on("guildMemberUpdate", (_, member) =>
+      this.onGuildMemberAddOrUpdate(member)
+    );
   }
 
   public addServer(server: ServerSettings) {
@@ -318,7 +324,7 @@ export default class CommunalMod {
     message.reply(response);
   }
 
-  async isWhitelisted(userId: string) {
+  async userIsWhitelisted(userId: string) {
     const botGuilds = Array.from(this.client.guilds.cache);
 
     for (let [id, guild] of botGuilds) {
@@ -335,7 +341,28 @@ export default class CommunalMod {
       }
     }
 
-    console.log("returning false");
+    this.client.users.fetch(this.adminId).then(async (admin) => {
+      let user: Discord.User | null = null;
+
+      try {
+        user = await this.client.users.fetch(userId);
+      } catch (error) {
+        console.log(error);
+      }
+      const dmChannel = admin.dmChannel;
+
+      if (dmChannel) {
+        const response = new Discord.MessageEmbed();
+        response.setTitle("**Unauthorized Bot Usage**");
+        response.setDescription(
+          `Non-whitelisted user ${user ? user : userId} attempted to use this bot`
+        );
+        response.setColor(0xff0000);
+
+        dmChannel.send(response);
+      }
+    });
+
     return false;
   }
 
@@ -343,7 +370,7 @@ export default class CommunalMod {
     if (message.channel.type != "dm") return;
     if (message.author.id === this.client.user!.id) return;
 
-    if (!(await this.isWhitelisted(message.author.id))) {
+    if (!(await this.userIsWhitelisted(message.author.id))) {
       this.sendError(
         message,
         "You are not permitted to use this bot.\nThe admin has been notified"

@@ -42,6 +42,7 @@ class CommunalMod {
         this.pendingBans = new Map();
         this.client = new Discord.Client();
         this.token = token;
+        this.adminId = adminId;
         this.client.on("ready", () => {
             if (process.env.NODE_ENV != "prod") {
                 console.log("Running in DEV");
@@ -50,6 +51,8 @@ class CommunalMod {
         });
         this.client.on("message", (message) => this.onMessage(message));
         this.client.on("guildBanAdd", (guild, user) => this.onGuildBanAdd(guild, user));
+        this.client.on("guildMemberAdd", (member) => this.onGuildMemberAddOrUpdate(member));
+        this.client.on("guildMemberUpdate", (_, member) => this.onGuildMemberAddOrUpdate(member));
     }
     addServer(server) {
         this.servers.push(server);
@@ -167,8 +170,11 @@ class CommunalMod {
                 return ids;
             }
             try {
-                ids = Array.from((yield guild.members.fetch({ query: user.username, limit: 500, force: true })).map((member) => member.id));
-                console.log(`IDs: ${ids}`);
+                ids = Array.from((yield guild.members.fetch({
+                    query: user.username,
+                    limit: 500,
+                    force: true,
+                })).map((member) => member.id));
             }
             catch (error) {
                 console.log(error);
@@ -200,27 +206,20 @@ class CommunalMod {
             }
             const users = [];
             if (usernamePattern.test(message.content)) {
-                console.log("is username pattern");
                 let newIds = [];
                 for (const id of ids) {
-                    console.log(`ID: ${id}`);
                     for (const server of this.servers) {
-                        console.log(`${server}`);
                         newIds = ids.concat(yield this.getUserIdsByName(message, server.serverId, id));
-                        console.log(`loop ${ids}`);
                     }
                 }
                 ids = newIds;
             }
-            console.log(ids);
             for (const id of ids) {
                 try {
                     const user = yield this.client.users.fetch(id);
                     users.push(user);
                 }
-                catch (_a) {
-                    console.log("error");
-                }
+                catch (_a) { }
             }
             this.pendingBans.set(message.author.id, {
                 ids,
@@ -249,8 +248,9 @@ class CommunalMod {
                     const user = yield this.client.users.fetch(id);
                     users.push(user);
                 }
-                catch (_a) {
-                    console.log("error");
+                catch (error) {
+                    this.sendError(message, `Unable to fetch user with ID: ${id}`);
+                    console.log(error);
                 }
             }
             this.pendingBans.set(message.author.id, {
@@ -273,7 +273,7 @@ class CommunalMod {
         response.setColor(0xff0000);
         message.reply(response);
     }
-    isWhitelisted(userId) {
+    userIsWhitelisted(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const botGuilds = Array.from(this.client.guilds.cache);
             for (let [id, guild] of botGuilds) {
@@ -287,7 +287,23 @@ class CommunalMod {
                     }
                 }
             }
-            console.log("returning false");
+            this.client.users.fetch(this.adminId).then((admin) => __awaiter(this, void 0, void 0, function* () {
+                let user = null;
+                try {
+                    user = yield this.client.users.fetch(userId);
+                }
+                catch (error) {
+                    console.log(error);
+                }
+                const dmChannel = admin.dmChannel;
+                if (dmChannel) {
+                    const response = new Discord.MessageEmbed();
+                    response.setTitle("**Unauthorized Bot Usage**");
+                    response.setDescription(`Non-whitelisted user ${user ? user : userId} attempted to use this bot`);
+                    response.setColor(0xff0000);
+                    dmChannel.send(response);
+                }
+            }));
             return false;
         });
     }
@@ -297,7 +313,7 @@ class CommunalMod {
                 return;
             if (message.author.id === this.client.user.id)
                 return;
-            if (!(yield this.isWhitelisted(message.author.id))) {
+            if (!(yield this.userIsWhitelisted(message.author.id))) {
                 this.sendError(message, "You are not permitted to use this bot.\nThe admin has been notified");
                 return;
             }
@@ -339,7 +355,7 @@ class CommunalMod {
     onGuildBanAdd(guild, user) {
         return __awaiter(this, void 0, void 0, function* () {
             const server = this.servers.find((server) => server.serverId === guild.id && server.whitelisted);
-            if (server == undefined) {
+            if (!server) {
                 return;
             }
             const ban = yield guild.fetchBan(user.id);
@@ -347,6 +363,23 @@ class CommunalMod {
                 return;
             }
             this.crossServerBan([user.id], { guild });
+        });
+    }
+    onGuildMemberAddOrUpdate(member) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const server = this.servers.find((server) => server.serverId === member.guild.id);
+            if (!server) {
+                return;
+            }
+            for (const word of server.blacklist) {
+                if (member.user.username.includes(word)) {
+                    member
+                        .ban({ days: 7, reason: "Username on Communal Mod server blacklist" })
+                        .catch((error) => {
+                        console.log(error);
+                    });
+                }
+            }
         });
     }
 }
