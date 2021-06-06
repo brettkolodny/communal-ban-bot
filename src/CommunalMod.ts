@@ -307,7 +307,7 @@ export default class CommunalMod {
       ids,
       commandType: CommandType.UNBAN,
     });
-    
+
     let description = users.map((user) => user.toString()).join(" ");
     description = description.length < 2000 ? description : `Too many users to show, you will ban ${users.length} users.`;
 
