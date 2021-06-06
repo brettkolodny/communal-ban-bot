@@ -269,7 +269,9 @@ export default class CommunalMod {
       ids,
       commandType: CommandType.BAN,
     });
-    const description = users.map((user) => user.toString()).join(" ");
+
+    let description = users.map((user) => user.toString()).join(" ");
+    description = description.length < 2000 ? description : `Too many users to show, you will ban ${users.length} users.`;
 
     const response = new Discord.MessageEmbed();
     response.setTitle("**You will ban these users:**");
@@ -305,7 +307,9 @@ export default class CommunalMod {
       ids,
       commandType: CommandType.UNBAN,
     });
-    const description = users.map((user) => user.toString()).join(" ");
+    
+    let description = users.map((user) => user.toString()).join(" ");
+    description = description.length < 2000 ? description : `Too many users to show, you will ban ${users.length} users.`;
 
     const response = new Discord.MessageEmbed();
     response.setTitle("**You will unban these users:**");
@@ -404,6 +408,7 @@ export default class CommunalMod {
     const banCommandPattern = /\s*!ban (--username\s+)?(\d{18}\s*)+/g;
     const serverCommandPattern = /\s*!servers\s*/g;
     const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
+    const raidCommandPattern = /\s*!raid\s*--server\s*\d{18}\s*--user\s*\d{18}\s*--before\s*\d+\s*--after\s*\d+\s*/g;
 
     if (banCommandPattern.test(msgContent)) {
       this.banCommand(message);
@@ -411,6 +416,8 @@ export default class CommunalMod {
       this.unbanCommand(message);
     } else if (serverCommandPattern.test(msgContent)) {
       this.serverCommand(message);
+    } else if (raidCommandPattern.test(msgContent)) {
+      console.log("raid");
     }
   }
 
