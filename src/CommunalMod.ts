@@ -42,6 +42,10 @@ export default class CommunalMod {
     this.client.on("guildBanAdd", (guild, user) =>
       this.onGuildBanAdd(guild, user)
     );
+
+    this.client.on("guildMemberAdd", (member) => this.onGuildMemberAddOrUpdate(member));
+
+    this.client.on("guildMemberUpdate", (_, member) => this.onGuildMemberAddOrUpdate(member));
   }
 
   public addServer(server: ServerSettings) {
@@ -388,7 +392,7 @@ export default class CommunalMod {
       (server) => server.serverId === guild.id && server.whitelisted
     );
 
-    if (server == undefined) {
+    if (!server) {
       return;
     }
 
@@ -399,5 +403,25 @@ export default class CommunalMod {
     }
 
     this.crossServerBan([user.id], { guild });
+  }
+
+  private async onGuildMemberAddOrUpdate(member: Discord.GuildMember) {
+    const server = this.servers.find(
+      (server) => server.serverId === member.guild.id
+    );
+
+    if (!server) {
+      return;
+    }
+
+    for (const word of server.blacklist) {
+      if (member.user.username.includes(word)) {
+        member
+          .ban({ days: 7, reason: "Username on Communal Mod server blacklist" })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    }
   }
 }
