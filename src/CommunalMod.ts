@@ -309,10 +309,76 @@ export default class CommunalMod {
     });
 
     let description = users.map((user) => user.toString()).join(" ");
-    description = description.length < 2000 ? description : `Too many users to show, you will ban ${users.length} users.`;
+    description = description.length < 2000 ? description : `Too many users to show, you will unban ${users.length} users.`;
 
     const response = new Discord.MessageEmbed();
     response.setTitle("**You will unban these users:**");
+    response.setDescription(description);
+    response.setFooter("Types [y]es to confirm or anything else to cancel");
+    response.setColor(MESSAGE_COLOR);
+
+    message.reply(response);
+  }
+
+  private async raidCommand(message: Discord.Message, serverId: string, userId: string, before: string, after: string) {
+    const beforeTime = parseInt(before);
+    const afterTime = parseInt(after);
+
+    let member: Discord.GuildMember;
+    let guild = this.client.guilds.cache.find((guild) => guild.id === serverId);
+
+    if (!guild) {
+      this.sendError(message, "This bot is not on the given server");
+      return;
+    }
+
+    try {
+      member = await guild.members.fetch(userId);
+    } catch (error) {
+      console.log(error);
+      this.sendError(message, "Could not retrieve given user");
+      return;
+    }
+
+    const memberJoinTime = member!.joinedAt;
+
+    if (!memberJoinTime) {
+      this.sendError(message, "Could not retrieve given user's join time");
+      return;
+    }
+
+    let minDate = new Date(memberJoinTime.getTime());
+    minDate.setMinutes(minDate.getMinutes() - beforeTime);
+
+    let maxDate = new Date(memberJoinTime.getTime());
+    maxDate.setMinutes(maxDate.getMinutes() + afterTime);
+
+    const allUsers = await guild.members.fetch();
+
+    const ids = allUsers.filter(member => member.joinedAt! >= minDate && member.joinedAt! <= maxDate).map(member => member.id);
+
+    const users: Discord.User[] = [];
+
+    for (const id of ids) {
+      try {
+        const user = await this.client.users.fetch(id);
+        users.push(user);
+      } catch (error) {
+        this.sendError(message, `Unable to fetch user with ID: ${id}`);
+        console.log(error);
+      }
+    }
+
+    this.pendingBans.set(message.author.id, {
+      ids,
+      commandType: CommandType.BAN,
+    });
+
+    let description = users.map((user) => user.toString()).join(" ");
+    description = description.length < 2000 ? description : `Too many users to show, you will ban ${users.length} users.`;
+
+    const response = new Discord.MessageEmbed();
+    response.setTitle("**You will ban these users:**");
     response.setDescription(description);
     response.setFooter("Types [y]es to confirm or anything else to cancel");
     response.setColor(MESSAGE_COLOR);
@@ -408,7 +474,7 @@ export default class CommunalMod {
     const banCommandPattern = /\s*!ban (--username\s+)?(\d{18}\s*)+/g;
     const serverCommandPattern = /\s*!servers\s*/g;
     const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
-    const raidCommandPattern = /\s*!raid\s*--server\s*\d{18}\s*--user\s*\d{18}\s*--before\s*\d+\s*--after\s*\d+\s*/g;
+    const raidCommandPattern = /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
 
     if (banCommandPattern.test(msgContent)) {
       this.banCommand(message);
@@ -417,7 +483,11 @@ export default class CommunalMod {
     } else if (serverCommandPattern.test(msgContent)) {
       this.serverCommand(message);
     } else if (raidCommandPattern.test(msgContent)) {
-      console.log("raid");
+      const raidCommandExec = raidCommandPattern.exec(msgContent);
+      if (raidCommandExec) {
+        const [_, server, user, before, after] = raidCommandExec;
+        this.raidCommand(message, server, user, before, after);
+      }
     }
   }
 
