@@ -118,3 +118,5 @@ dist
 src/*.js
 
 .DS_Store
+
+build/
