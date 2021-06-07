@@ -538,7 +538,7 @@ export default class CommunalMod {
       return;
     }
 
-    this.crossServerBan([user.id], undefined, { guild });
+    this.crossServerBan([user.id], ban.reason, { guild });
   }
 
   private async onGuildMemberAddOrUpdate(member: Discord.GuildMember) {
