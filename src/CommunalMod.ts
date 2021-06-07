@@ -81,9 +81,7 @@ export class CommunalMod {
     }
 
     if (process.env.NODE_ENV === "prod") {
-      try {
-        guild.members.ban(id, { reason, days: 7 });
-      } catch (error) {
+      guild.members.ban(id, { reason, days: 7 }).catch((error) => {
         if (options && options.message) {
           this.sendError(
             options.message,
@@ -91,7 +89,7 @@ export class CommunalMod {
           );
         }
         console.log(error);
-      }
+      });
     } else {
       console.log(`DEV: Banning ${id} on ${guild.name}`);
       console.log(`-> REASON: ${reason}\n`);
@@ -116,9 +114,7 @@ export class CommunalMod {
     }
 
     if (process.env.NODE_ENV === "prod") {
-      try {
-        guild.members.unban(id, reason);
-      } catch (error) {
+      guild.members.unban(id, reason).catch((error) => {
         if (options && options.message) {
           this.sendError(
             options.message,
@@ -126,7 +122,7 @@ export class CommunalMod {
           );
         }
         console.log(error);
-      }
+      });
     } else {
       console.log(`DEV: Unbanning ${id} on ${guild.name}`);
       console.log(`-> REASON: ${reason}\n`);
@@ -262,8 +258,6 @@ export class CommunalMod {
       }
     }
 
-    console.log(reason);
-
     const users: Discord.User[] = [];
 
     if (usernamePattern.test(message.content)) {
@@ -325,8 +319,6 @@ export class CommunalMod {
         reason = reasonMatch[0].split(" ").slice(1).join(" ");
       }
     }
-
-    console.log(reason);
 
     const users: Discord.User[] = [];
 
