@@ -12,6 +12,7 @@ enum CommandType {
 interface PendingBans {
   ids: string[];
   commandType: CommandType;
+  reason?: string;
 }
 
 interface BanOptions {
@@ -65,15 +66,17 @@ export default class CommunalMod {
   private async banUser(
     guild: Discord.Guild,
     id: string,
+    givenReason?: string,
     options?: BanOptions
   ) {
-    let reason: string = "";
+    let reason = "";
+    givenReason = givenReason ? givenReason : "No reason given";
 
     if (options) {
       if (options?.guild) {
-        reason = `${MOD_REASON} banned from ${options.guild.name}`;
+        reason = `${MOD_REASON} banned from ${options.guild.name} for reason: ${givenReason}`;
       } else if (options?.message) {
-        reason = `${MOD_REASON} banned by ${options.message.author.username}#${options.message.author.discriminator}`;
+        reason = `${MOD_REASON} banned by ${options.message.author.username}#${options.message.author.discriminator} for reason: ${givenReason}`;
       }
     }
 
@@ -98,15 +101,17 @@ export default class CommunalMod {
   private async unbanUser(
     guild: Discord.Guild,
     id: string,
+    givenReason?: string,
     options?: BanOptions
   ) {
     let reason: string = "";
+    givenReason = givenReason ? givenReason : "No reason given";
 
     if (options) {
       if (options?.guild) {
-        reason = `${MOD_REASON} unbanned from ${options.guild.name}`;
+        reason = `${MOD_REASON} unbanned from ${options.guild.name} for reason: ${givenReason}`;
       } else if (options?.message) {
-        reason = `${MOD_REASON} unbanned by ${options.message.author.username}#${options.message.author.discriminator}`;
+        reason = `${MOD_REASON} unbanned by ${options.message.author.username}#${options.message.author.discriminator} for reason: ${givenReason}`;
       }
     }
 
@@ -123,19 +128,19 @@ export default class CommunalMod {
         console.log(error);
       }
     } else {
-      console.log(`DEV: Banning ${id} on ${guild.name}`);
+      console.log(`DEV: Unbanning ${id} on ${guild.name}`);
       console.log(`-> REASON: ${reason}\n`);
     }
   }
 
-  private crossServerBan(ids: string[], options?: BanOptions) {
+  private crossServerBan(ids: string[], reason?: string, options?: BanOptions) {
     ids.forEach((id) => {
       this.client.guilds.cache.forEach((guild) => {
         if (options && options.guild && options.guild.id === guild.id) {
           return;
         }
 
-        this.banUser(guild, id, options);
+        this.banUser(guild, id, reason, options);
       });
     });
 
@@ -148,14 +153,14 @@ export default class CommunalMod {
     }
   }
 
-  private crossServerUnban(ids: string[], options?: BanOptions) {
+  private crossServerUnban(ids: string[], reason?: string, options?: BanOptions) {
     ids.forEach((id) => {
       this.client.guilds.cache.forEach((guild) => {
         if (options && options.guild && options.guild.id === guild.id) {
           return;
         }
 
-        this.unbanUser(guild, id, options);
+        this.unbanUser(guild, id, reason, options);
       });
     });
 
@@ -236,12 +241,24 @@ export default class CommunalMod {
   private async banCommand(message: Discord.Message) {
     const idPattern = /\d{18}/g;
     const usernamePattern = /--username\s*/g;
+    const reasonPattern = /--reason\s*.*/g;
 
     let ids = message.content.match(idPattern);
     if (!ids) {
       this.sendError(message, "One or more IDs required");
       return;
     }
+
+    let reason: string | undefined = undefined;
+    if (reasonPattern.test(message.content)) {
+      const reasonMatch = message.content.match(reasonPattern)
+      
+      if (reasonMatch) {
+        reason = reasonMatch[0].split(" ").slice(1).join(" ");
+      }
+    }
+
+    console.log(reason);
 
     const users: Discord.User[] = [];
 
@@ -268,6 +285,7 @@ export default class CommunalMod {
     this.pendingBans.set(message.author.id, {
       ids,
       commandType: CommandType.BAN,
+      reason,
     });
 
     let description = users.map((user) => user.toString()).join(" ");
@@ -284,12 +302,25 @@ export default class CommunalMod {
 
   private async unbanCommand(message: Discord.Message) {
     const idPattern = /\d{18}/g;
+    const reasonPattern = /--reason\s*.*/g;
 
     const ids = message.content.match(idPattern);
     if (!ids) {
       this.sendError(message, "One or more IDs required");
       return;
     }
+
+    let reason: string | undefined = undefined;
+    if (reasonPattern.test(message.content)) {
+      const reasonMatch = message.content.match(reasonPattern)
+      
+      if (reasonMatch) {
+        reason = reasonMatch[0].split(" ").slice(1).join(" ");
+      }
+    }
+
+    console.log(reason);
+
 
     const users: Discord.User[] = [];
 
@@ -306,6 +337,7 @@ export default class CommunalMod {
     this.pendingBans.set(message.author.id, {
       ids,
       commandType: CommandType.UNBAN,
+      reason
     });
 
     let description = users.map((user) => user.toString()).join(" ");
@@ -454,11 +486,11 @@ export default class CommunalMod {
     const pendingBans = this.pendingBans.get(message.author.id);
     if (pendingBans) {
       if (/\s*(yes|y)\s*/g.test(msgContent)) {
-        const { ids, commandType } = pendingBans;
+        const { ids, commandType, reason } = pendingBans;
         if (commandType == CommandType.BAN) {
-          this.crossServerBan(ids, { message });
+          this.crossServerBan(ids, reason, { message });
         } else if (commandType == CommandType.UNBAN) {
-          this.crossServerUnban(ids, { message });
+          this.crossServerUnban(ids, reason, { message });
         }
       } else {
         const response = new Discord.MessageEmbed();
@@ -471,7 +503,7 @@ export default class CommunalMod {
       return;
     }
 
-    const banCommandPattern = /\s*!ban (--username\s+)?(\d{18}\s*)+/g;
+    const banCommandPattern = /\s*!ban (--username\s+)?(\d{18}\s*)+(--reason\s*.*)?/g;
     const serverCommandPattern = /\s*!servers\s*/g;
     const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
     const raidCommandPattern = /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
@@ -506,7 +538,7 @@ export default class CommunalMod {
       return;
     }
 
-    this.crossServerBan([user.id], { guild });
+    this.crossServerBan([user.id], undefined, { guild });
   }
 
   private async onGuildMemberAddOrUpdate(member: Discord.GuildMember) {
@@ -529,3 +561,26 @@ export default class CommunalMod {
     }
   }
 }
+
+
+// const contentSplit = message.content.split(" ");
+
+// let ids: string[] = [];
+
+// let reason: string | null = null;
+
+// let foundId = false;
+// let index = 0;
+// for (const word of contentSplit) {
+//   if (idPattern.test(word)) {
+//     ids.push(word);
+//     foundId = true;
+//   } else if (foundId) {
+//       reason = contentSplit.slice(index).join(" ");
+//       break;
+//   }
+  
+//   index += 1;
+// }
+
+// console.log(reason);
