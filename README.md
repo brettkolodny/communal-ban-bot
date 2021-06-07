@@ -8,13 +8,13 @@ For tightknit communities that have the same community guidelines this can great
 
 ## Commands
 
-- `!ban [--username] <ids> <reason>`
+- `!ban [--username] <ids> [--reason <reason>]`
 
   - Bans the user with the given IDs and inserts the given reason into the ban. The reason field is optional.
 
   - If the `--username` flag is given it will ban all users with the same usernames as the users with the IDs you provided.
 
-- `!unban <id> <reason>`
+- `!unban <id> [--reason <reason>]`
 
   - Unbans the user with the given ID and inserts the given reason into the unban. The reason field is optional.
 
