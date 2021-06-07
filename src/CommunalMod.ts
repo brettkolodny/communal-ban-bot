@@ -578,8 +578,9 @@ export class CommunalMod {
       return;
     }
 
+    const username = member.user.username.toLowerCase();
     for (const word of server.blacklist) {
-      if (member.user.username.includes(word)) {
+      if (username.includes(word)) {
         member
           .ban({ days: 7, reason: "Username on Communal Mod server blacklist" })
           .catch((error) => {
