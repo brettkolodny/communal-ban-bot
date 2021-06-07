@@ -153,7 +153,11 @@ export class CommunalMod {
     }
   }
 
-  private crossServerUnban(ids: string[], reason?: string, options?: BanOptions) {
+  private crossServerUnban(
+    ids: string[],
+    reason?: string,
+    options?: BanOptions
+  ) {
     ids.forEach((id) => {
       this.client.guilds.cache.forEach((guild) => {
         if (options && options.guild && options.guild.id === guild.id) {
@@ -251,8 +255,8 @@ export class CommunalMod {
 
     let reason: string | undefined = undefined;
     if (reasonPattern.test(message.content)) {
-      const reasonMatch = message.content.match(reasonPattern)
-      
+      const reasonMatch = message.content.match(reasonPattern);
+
       if (reasonMatch) {
         reason = reasonMatch[0].split(" ").slice(1).join(" ");
       }
@@ -289,7 +293,10 @@ export class CommunalMod {
     });
 
     let description = users.map((user) => user.toString()).join(" ");
-    description = description.length < 2000 ? description : `Too many users to show, you will ban ${users.length} users.`;
+    description =
+      description.length < 2000
+        ? description
+        : `Too many users to show, you will ban ${users.length} users.`;
 
     const response = new Discord.MessageEmbed();
     response.setTitle("**You will ban these users:**");
@@ -312,15 +319,14 @@ export class CommunalMod {
 
     let reason: string | undefined = undefined;
     if (reasonPattern.test(message.content)) {
-      const reasonMatch = message.content.match(reasonPattern)
-      
+      const reasonMatch = message.content.match(reasonPattern);
+
       if (reasonMatch) {
         reason = reasonMatch[0].split(" ").slice(1).join(" ");
       }
     }
 
     console.log(reason);
-
 
     const users: Discord.User[] = [];
 
@@ -337,11 +343,14 @@ export class CommunalMod {
     this.pendingBans.set(message.author.id, {
       ids,
       commandType: CommandType.UNBAN,
-      reason
+      reason,
     });
 
     let description = users.map((user) => user.toString()).join(" ");
-    description = description.length < 2000 ? description : `Too many users to show, you will unban ${users.length} users.`;
+    description =
+      description.length < 2000
+        ? description
+        : `Too many users to show, you will unban ${users.length} users.`;
 
     const response = new Discord.MessageEmbed();
     response.setTitle("**You will unban these users:**");
@@ -352,7 +361,13 @@ export class CommunalMod {
     message.reply(response);
   }
 
-  private async raidCommand(message: Discord.Message, serverId: string, userId: string, before: string, after: string) {
+  private async raidCommand(
+    message: Discord.Message,
+    serverId: string,
+    userId: string,
+    before: string,
+    after: string
+  ) {
     const beforeTime = parseInt(before);
     const afterTime = parseInt(after);
 
@@ -387,7 +402,11 @@ export class CommunalMod {
 
     const allUsers = await guild.members.fetch();
 
-    const ids = allUsers.filter(member => member.joinedAt! >= minDate && member.joinedAt! <= maxDate).map(member => member.id);
+    const ids = allUsers
+      .filter(
+        (member) => member.joinedAt! >= minDate && member.joinedAt! <= maxDate
+      )
+      .map((member) => member.id);
 
     const users: Discord.User[] = [];
 
@@ -407,7 +426,10 @@ export class CommunalMod {
     });
 
     let description = users.map((user) => user.toString()).join(" ");
-    description = description.length < 2000 ? description : `Too many users to show, you will ban ${users.length} users.`;
+    description =
+      description.length < 2000
+        ? description
+        : `Too many users to show, you will ban ${users.length} users.`;
 
     const response = new Discord.MessageEmbed();
     response.setTitle("**You will ban these users:**");
@@ -457,7 +479,9 @@ export class CommunalMod {
         const response = new Discord.MessageEmbed();
         response.setTitle("**Unauthorized Bot Usage**");
         response.setDescription(
-          `Non-whitelisted user ${user ? user : userId} attempted to use this bot`
+          `Non-whitelisted user ${
+            user ? user : userId
+          } attempted to use this bot`
         );
         response.setColor(0xff0000);
 
@@ -503,10 +527,12 @@ export class CommunalMod {
       return;
     }
 
-    const banCommandPattern = /\s*!ban (--username\s+)?(\d{18}\s*)+(--reason\s*.*)?/g;
+    const banCommandPattern =
+      /\s*!ban (--username\s+)?(\d{18}\s*)+(--reason\s*.*)?/g;
     const serverCommandPattern = /\s*!servers\s*/g;
     const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
-    const raidCommandPattern = /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+    const raidCommandPattern =
+      /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
 
     if (banCommandPattern.test(msgContent)) {
       this.banCommand(message);
@@ -520,6 +546,16 @@ export class CommunalMod {
         const [_, server, user, before, after] = raidCommandExec;
         this.raidCommand(message, server, user, before, after);
       }
+    } else {
+      const response = new Discord.MessageEmbed();
+      response.setTitle("**Invalid Command**");
+      response.setDescription(
+        `This command does not match any known commands.
+        Please visit the [repo](https://github.com/brettkolodny/communal-ban-bot) for more information on bot usage.`
+      );
+      response.setColor(0xff0000);
+
+      message.reply(response);
     }
   }
 
@@ -561,26 +597,3 @@ export class CommunalMod {
     }
   }
 }
-
-
-// const contentSplit = message.content.split(" ");
-
-// let ids: string[] = [];
-
-// let reason: string | null = null;
-
-// let foundId = false;
-// let index = 0;
-// for (const word of contentSplit) {
-//   if (idPattern.test(word)) {
-//     ids.push(word);
-//     foundId = true;
-//   } else if (foundId) {
-//       reason = contentSplit.slice(index).join(" ");
-//       break;
-//   }
-  
-//   index += 1;
-// }
-
-// console.log(reason);
