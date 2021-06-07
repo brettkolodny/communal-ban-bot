@@ -1,4 +1,4 @@
-export default class ServerSettings {
+export class ServerSettings {
     public serverId: string;
     public whitelisted: boolean;
     public blacklist: string[];

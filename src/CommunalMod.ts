@@ -1,5 +1,5 @@
 import * as Discord from "discord.js";
-import ServerSettings from "./ServerSettings";
+import { ServerSettings } from "./ServerSettings";
 
 const MOD_REASON = "Operation by Communal Mod:";
 const MESSAGE_COLOR = 0xc2a2e9;
@@ -20,7 +20,7 @@ interface BanOptions {
   message?: Discord.Message;
 }
 
-export default class CommunalMod {
+export class CommunalMod {
   private client: Discord.Client;
   private token: string;
   private servers: ServerSettings[] = [];

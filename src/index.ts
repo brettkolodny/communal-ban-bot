@@ -1,2 +1,2 @@
-export * as CommunalMod from "./CommunalMod";
-export * as ServerSettings from "./ServerSettings";
+export { CommunalMod } from "./CommunalMod";
+export { ServerSettings } from "./ServerSettings";
