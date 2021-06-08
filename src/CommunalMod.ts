@@ -446,12 +446,16 @@ export class CommunalMod {
     for (let [id, guild] of botGuilds) {
       for (let serverSettings of this.servers) {
         if (serverSettings.serverId === id && serverSettings.whitelisted) {
-          const member = await guild.members.fetch(userId);
-          if (
-            member &&
-            member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)
-          ) {
-            return true;
+          try {
+            const member = await guild.members.fetch(userId);
+            if (
+              member &&
+              member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)
+            ) {
+              return true;
+            }
+          } catch (error) {
+            console.log(error);
           }
         }
       }
@@ -464,6 +468,7 @@ export class CommunalMod {
         user = await this.client.users.fetch(userId);
       } catch (error) {
         console.log(error);
+        console.log("Could not DM Admin");
       }
       const dmChannel = admin.dmChannel;
 
@@ -582,7 +587,7 @@ export class CommunalMod {
     for (const word of server.blacklist) {
       if (username.includes(word)) {
         member
-          .ban({ days: 7, reason: `${MOD_REASON} Username on blacklist` })
+          .ban({ days: 7, reason: `${MOD_REASON} Username on blacklistcd` })
           .catch((error) => {
             console.log(error);
           });
