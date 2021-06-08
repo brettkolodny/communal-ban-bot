@@ -202,15 +202,10 @@ export class CommunalMod {
     }
 
     try {
-      ids = Array.from(
-        (
-          await guild.members.fetch({
-            query: user.username,
-            limit: 500,
-            force: true,
-          })
-        ).map((member) => member.id)
-      );
+      const givenUsername = user.username.trim().toLowerCase();
+      ids = (await guild.members.fetch())
+      .filter((member) => member.user.username.trim().toLowerCase() === givenUsername)
+      .map((member) => member.id);
     } catch (error) {
       console.log(error);
       this.sendError(
