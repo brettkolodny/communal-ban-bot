@@ -582,7 +582,7 @@ export class CommunalMod {
     for (const word of server.blacklist) {
       if (username.includes(word)) {
         member
-          .ban({ days: 7, reason: "Username on Communal Mod server blacklist" })
+          .ban({ days: 7, reason: `${MOD_REASON} Username on blacklist` })
           .catch((error) => {
             console.log(error);
           });
