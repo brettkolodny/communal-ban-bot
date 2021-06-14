@@ -31,3 +31,25 @@ For tightknit communities that have the same community guidelines this can great
 - `!servers`
 
   - Lists all of the servers the bot is on.
+
+## Setup
+
+To set up your own Communal Mod all you have to do is define some servers and add them to an instance of the CommunalMod.
+
+```js
+// The ServerSettings constructor takes a server, 
+// and an optional boolean for whether the server is whitelisted in the bot.
+const server1 = new ServerSettings("server id here", true);
+
+// Set optional username blacklist for a server.
+server1.setBlacklist(["Scammer", "Real Airdrop", "Won't Steal Seed Phrase"]);
+
+// The CommunalMod constructor takes a discord bot token, and the ID of the bot's admin.
+const communalMod = new CommunalMod("bot token", "admin id here");
+
+// Add the servers to the CommunalMod
+communalMod.addServer(server1);
+
+// Start the bot
+communalMod.login()
+```
