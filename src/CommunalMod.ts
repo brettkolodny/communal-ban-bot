@@ -578,6 +578,10 @@ export class CommunalMod {
       return;
     }
 
+    if (server.whitelist.includes(member.user.id)) {
+      return;
+    }
+
     const username = member.user.username.toLowerCase();
     for (const word of server.blacklist) {
       if (username.includes(word)) {
