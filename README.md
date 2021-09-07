@@ -8,17 +8,30 @@ For tightknit communities that have the same community guidelines this can great
 
 ## Commands
 
+### Ban
+
 - `!ban [--username] <ids> [--reason <reason>]`
+
+   #### Example:
+   ```
+   !ban --username 872764606693642270 --reason scam
+   ```
 
   - Bans the user with the given IDs and inserts the given reason into the ban. The reason field is optional.
 
   - If the `--username` flag is given it will ban all users with the same usernames as the users with the IDs you provided.
-
+### Unban
 - `!unban <id> [--reason <reason>]`
 
   - Unbans the user with the given ID and inserts the given reason into the unban. The reason field is optional.
 
+### Raid
 - `!raid --server <server id> --user <user id> --before <time before> --after <time after>`
+   
+   #### Example:
+   ```
+   !raid --server 722223075629727774 --user 872776790370836501 --before 0 --after 1
+   ```
 
   - Bans all users in the server given from `<server id>` that joined at the same time as `<user id>`.
 
@@ -28,6 +41,7 @@ For tightknit communities that have the same community guidelines this can great
 
   - If you do not have the ban privilege on any of the whitelisted servers the admin will be notified that you tried to use the bot.
 
+### Servers
 - `!servers`
 
   - Lists all of the servers the bot is on.
