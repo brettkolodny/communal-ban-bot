@@ -67,3 +67,16 @@ communalMod.addServer(server1);
 // Start the bot
 communalMod.login()
 ```
+
+## Testing
+
+To run the test bot create a `.env` file with like the following:
+
+```
+BOT_TOKEN=<your bot secret token>
+ADMIN_ID=<discord admin id>
+SERVER_ID=<discord server id>
+CHANNEL_ID=<discord channel id>
+```
+
+Then run `yarn start:dev` to start the bot.
