@@ -10,4 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./build"
   },
+  "exclude": [
+    "test"
+  ]
 }
