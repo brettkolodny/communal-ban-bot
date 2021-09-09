@@ -120,3 +120,5 @@ src/*.js
 .DS_Store
 
 build/
+
+.env

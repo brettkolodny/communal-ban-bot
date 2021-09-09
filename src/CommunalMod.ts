@@ -204,8 +204,11 @@ export class CommunalMod {
     try {
       const givenUsername = user.username.trim().toLowerCase();
       ids = (await guild.members.fetch())
-      .filter((member) => member.user.username.trim().toLowerCase() === givenUsername)
-      .map((member) => member.id);
+        .filter(
+          (member) =>
+            member.user.username.trim().toLowerCase() === givenUsername
+        )
+        .map((member) => member.id);
     } catch (error) {
       console.log(error);
       this.sendError(
@@ -485,8 +488,19 @@ export class CommunalMod {
   }
 
   private async onMessage(message: Discord.Message) {
-    if (message.channel.type != "dm") return;
     if (message.author.id === this.client.user!.id) return;
+    
+    if (message.guild) {
+      const server = this.servers.find((server) => {
+        if (message.guild?.id && message.guild.id === server.serverId) {
+          return server.allowedChannel === message.channel.id;
+        }
+        
+        return false;
+      });
+
+      if (!server) return;
+    }
 
     if (!(await this.userIsWhitelisted(message.author.id))) {
       this.sendError(
