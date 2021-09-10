@@ -72,6 +72,11 @@ export class CommunalMod {
     let reason = "";
     givenReason = givenReason ? givenReason : "No reason given";
 
+    if (!options || !options.message) {
+      const server = this.servers.find((server) => server.serverId === guild.id);
+      if (server && !server.acceptAllBans) return;
+    }
+
     if (options) {
       if (options?.guild) {
         reason = `${MOD_REASON} banned from ${options.guild.name} for reason: ${givenReason}`;
@@ -134,11 +139,6 @@ export class CommunalMod {
       this.client.guilds.cache.forEach((guild) => {
         if (options && options.guild && options.guild.id === guild.id) {
           return;
-        }
-
-        if (!options || !options.message) {
-          const server = this.servers.find((server) => server.serverId === guild.id);
-          if (server && !server.acceptAllBans) return;
         }
 
         this.banUser(guild, id, reason, options);
