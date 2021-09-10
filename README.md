@@ -84,4 +84,5 @@ Then run `yarn start:dev` to start the bot.
 ## Tip The Author
 
 Kusama: `G9UkyTC7C35TjKxcjKRjTHGhaXodUMSM5uAfM5b8Z2gEuUF`
+
 Polkadot: `1yrUupBDQhkYArLViHHuTtHRCBKAZTTU6PUcFpiDUF58wes`
