@@ -136,6 +136,11 @@ export class CommunalMod {
           return;
         }
 
+        if (!options || !options.message) {
+          const server = this.servers.find((server) => server.serverId === guild.id);
+          if (server && !server.acceptAllBans) return;
+        }
+
         this.banUser(guild, id, reason, options);
       });
     });
@@ -563,6 +568,24 @@ export class CommunalMod {
 
       message.reply(response);
     }
+  }
+
+  private async onGuildBanAdd(guild: Discord.Guild, user: Discord.User) {
+    const server = this.servers.find(
+      (server) => server.serverId === guild.id && server.whitelisted
+    );
+
+    if (!server) {
+      return;
+    }
+
+    const ban = await guild.fetchBan(user.id);
+
+    if (!ban || (ban.reason && ban.reason.startsWith(MOD_REASON))) {
+      return;
+    }
+
+    this.crossServerBan([user.id], ban.reason, { guild });
   }
 
   private async onGuildMemberAddOrUpdate(member: Discord.GuildMember) {

@@ -3,14 +3,16 @@ interface ServerOptions {
     blacklist?: string[];
     whitelist?: string[];
     allowedChannel?: string;
+    acceptAllBans?: boolean;
 }
 
 export class ServerSettings {
     public serverId: string;
-    public whitelisted: boolean;
-    public blacklist: string[];
-    public whitelist: string[];
-    public allowedChannel: string | null;
+    public whitelisted: boolean = false;
+    public blacklist: string[] = [];
+    public whitelist: string[] = [];
+    public allowedChannel: string | null = null;
+    public acceptAllBans: boolean = false;
 
     constructor(id: string, options?: ServerOptions) {
         this.serverId = id;
@@ -20,11 +22,7 @@ export class ServerSettings {
             this.blacklist = options.blacklist ? options.blacklist : [];
             this.whitelist = options.whitelist ? options.whitelist : [];
             this.allowedChannel = options.allowedChannel ? options.allowedChannel : null;
-        } else {
-            this.whitelisted = false;
-            this.blacklist = [];
-            this.whitelist = [];
-            this.allowedChannel = null;
+            this.acceptAllBans = options.acceptAllBans ? options.acceptAllBans : false;
         }
     }
 }
