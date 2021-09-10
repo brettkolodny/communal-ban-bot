@@ -565,24 +565,6 @@ export class CommunalMod {
     }
   }
 
-  private async onGuildBanAdd(guild: Discord.Guild, user: Discord.User) {
-    const server = this.servers.find(
-      (server) => server.serverId === guild.id && server.whitelisted
-    );
-
-    if (!server) {
-      return;
-    }
-
-    const ban = await guild.fetchBan(user.id);
-
-    if (!ban || (ban.reason && ban.reason.startsWith(MOD_REASON))) {
-      return;
-    }
-
-    this.crossServerBan([user.id], ban.reason, { guild });
-  }
-
   private async onGuildMemberAddOrUpdate(member: Discord.GuildMember) {
     const server = this.servers.find(
       (server) => server.serverId === member.guild.id
