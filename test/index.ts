@@ -7,13 +7,13 @@ if (
   !process.env.BOT_TOKEN ||
   !process.env.ADMIN_ID ||
   !process.env.SERVER2_ID ||
-  !process.env.SERVER_ID ||
+  !process.env.SERVER1_ID ||
   !process.env.CHANNEL_ID
 ) {
   process.exit(1);
 }
 
-const testServer = new ServerSettings(process.env.SERVER_ID, {
+const testServer = new ServerSettings(process.env.SERVER1_ID, {
   whitelisted: true
 });
 testServer.allowedChannel = process.env.CHANNEL_ID;
