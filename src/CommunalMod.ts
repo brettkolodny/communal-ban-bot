@@ -246,6 +246,14 @@ export class CommunalMod {
     const usernamePattern = /--username\s*/g;
     const reasonPattern = /--reason\s*.*/g;
 
+    let modServers: Discord.Guild[] = [];
+
+    for (const [_, guild] of this.client.guilds.cache) {
+      if (await this.userIsModOfGuild(message.author.id, guild)) {
+        modServers.push(guild);
+      }
+    }
+
     let ids = message.content.match(idPattern);
     if (!ids) {
       this.sendError(message, "One or more IDs required");
@@ -279,8 +287,33 @@ export class CommunalMod {
     for (const id of ids) {
       try {
         const user = await this.client.users.fetch(id);
-        users.push(user);
+
+        let canBan = false;
+        for (const guild of modServers) {
+          try {
+            const member = await guild.members.fetch(user);
+
+            if (member) {
+              users.push(user);
+              canBan = true;
+              break;
+            }
+          } catch {}
+        }
+
+        if (!canBan) {
+          this.sendError(message, `You do not have permission to ban ${user}`);
+        }
       } catch {}
+    }
+
+    if (users.length == 0) {
+      const response = new Discord.MessageEmbed();
+      response.setTitle("**No users to ban**");
+      response.setColor(MESSAGE_COLOR);
+  
+      message.reply(response);
+      return;
     }
 
     this.pendingBans.set(message.author.id, {
@@ -459,9 +492,7 @@ export class CommunalMod {
     try {
       const member = await guild.members.fetch(userId);
       if (member && member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)) return true;
-    } catch (error) {
-      console.log(error);
-    }
+    } catch {}
 
     return false;
   }
