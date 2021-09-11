@@ -363,16 +363,22 @@ export class CommunalMod {
     before: string,
     after: string
   ) {
-    const beforeTime = parseInt(before);
-    const afterTime = parseInt(after);
-
-    let member: Discord.GuildMember;
     let guild = this.client.guilds.cache.find((guild) => guild.id === serverId);
 
     if (!guild) {
       this.sendError(message, "This bot is not on the given server");
       return;
     }
+
+    if (!await this.userIsModOfGuild(message.author.id, guild)) {
+      this.sendError(message, `You are not a moderator of ${guild.name}`);
+      return;
+    }
+
+    const beforeTime = parseInt(before);
+    const afterTime = parseInt(after);
+
+    let member: Discord.GuildMember;
 
     try {
       member = await guild.members.fetch(userId);
@@ -441,6 +447,23 @@ export class CommunalMod {
     response.setDescription(error);
     response.setColor(0xff0000);
     message.reply(response);
+  }
+
+  async userIsModOfGuild(userId: string, guild: string | Discord.Guild): Promise<boolean> {
+    if (typeof(guild) === "string") {
+      const guildInstance = this.client.guilds.cache.find(g => g.id === guild);
+      if (!guildInstance) return false;
+      guild = guildInstance
+    }
+
+    try {
+      const member = await guild.members.fetch(userId);
+      if (member && member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)) return true;
+    } catch (error) {
+      console.log(error);
+    }
+
+    return false;
   }
 
   async userIsWhitelisted(userId: string) {
