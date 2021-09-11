@@ -6,6 +6,7 @@ dotenv.config({ path: "test/.env" });
 if (
   !process.env.BOT_TOKEN ||
   !process.env.ADMIN_ID ||
+  !process.env.SERVER2_ID ||
   !process.env.SERVER_ID ||
   !process.env.CHANNEL_ID
 ) {
@@ -13,11 +14,14 @@ if (
 }
 
 const testServer = new ServerSettings(process.env.SERVER_ID, {
-  whitelisted: true,
+  whitelisted: true
 });
 testServer.allowedChannel = process.env.CHANNEL_ID;
 
+const testServer2 = new ServerSettings(process.env.SERVER2_ID, { whitelisted: true });
+
 const mod = new CommunalMod(process.env.BOT_TOKEN, process.env.ADMIN_ID);
 mod.addServer(testServer);
+mod.addServer(testServer2);
 
 mod.login();
