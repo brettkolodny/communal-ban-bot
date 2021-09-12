@@ -72,6 +72,11 @@ export class CommunalMod {
     let reason = "";
     givenReason = givenReason ? givenReason : "No reason given";
 
+    if (!options || !options.message) {
+      const server = this.servers.find((server) => server.serverId === guild.id);
+      if (server && !server.acceptAllBans) return;
+    }
+
     if (options) {
       if (options?.guild) {
         reason = `${MOD_REASON} banned from ${options.guild.name} for reason: ${givenReason}`;
@@ -241,6 +246,14 @@ export class CommunalMod {
     const usernamePattern = /--username\s*/g;
     const reasonPattern = /--reason\s*.*/g;
 
+    let modServers: Discord.Guild[] = [];
+
+    for (const [_, guild] of this.client.guilds.cache) {
+      if (await this.userIsModOfGuild(message.author.id, guild)) {
+        modServers.push(guild);
+      }
+    }
+
     let ids = message.content.match(idPattern);
     if (!ids) {
       this.sendError(message, "One or more IDs required");
@@ -274,8 +287,33 @@ export class CommunalMod {
     for (const id of ids) {
       try {
         const user = await this.client.users.fetch(id);
-        users.push(user);
+
+        let canBan = false;
+        for (const guild of modServers) {
+          try {
+            const member = await guild.members.fetch(user);
+
+            if (member) {
+              users.push(user);
+              canBan = true;
+              break;
+            }
+          } catch {}
+        }
+
+        if (!canBan) {
+          this.sendError(message, `You do not have permission to ban ${user}`);
+        }
       } catch {}
+    }
+
+    if (users.length == 0) {
+      const response = new Discord.MessageEmbed();
+      response.setTitle("**No users to ban**");
+      response.setColor(MESSAGE_COLOR);
+  
+      message.reply(response);
+      return;
     }
 
     this.pendingBans.set(message.author.id, {
@@ -358,16 +396,22 @@ export class CommunalMod {
     before: string,
     after: string
   ) {
-    const beforeTime = parseInt(before);
-    const afterTime = parseInt(after);
-
-    let member: Discord.GuildMember;
     let guild = this.client.guilds.cache.find((guild) => guild.id === serverId);
 
     if (!guild) {
       this.sendError(message, "This bot is not on the given server");
       return;
     }
+
+    if (!await this.userIsModOfGuild(message.author.id, guild)) {
+      this.sendError(message, `You are not a moderator of ${guild.name}`);
+      return;
+    }
+
+    const beforeTime = parseInt(before);
+    const afterTime = parseInt(after);
+
+    let member: Discord.GuildMember;
 
     try {
       member = await guild.members.fetch(userId);
@@ -436,6 +480,21 @@ export class CommunalMod {
     response.setDescription(error);
     response.setColor(0xff0000);
     message.reply(response);
+  }
+
+  async userIsModOfGuild(userId: string, guild: string | Discord.Guild): Promise<boolean> {
+    if (typeof(guild) === "string") {
+      const guildInstance = this.client.guilds.cache.find(g => g.id === guild);
+      if (!guildInstance) return false;
+      guild = guildInstance
+    }
+
+    try {
+      const member = await guild.members.fetch(userId);
+      if (member && member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)) return true;
+    } catch {}
+
+    return false;
   }
 
   async userIsWhitelisted(userId: string) {
