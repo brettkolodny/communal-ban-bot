@@ -559,6 +559,7 @@ export class CommunalMod {
       });
 
       if (!server) return;
+      if (!message.content.startsWith("!")) return;
     }
 
     if (!(await this.userIsWhitelisted(message.author.id))) {
