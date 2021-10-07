@@ -549,6 +549,8 @@ export class CommunalMod {
   private async onMessage(message: Discord.Message) {
     if (message.author.id === this.client.user!.id) return;
     
+    const pendingBans = this.pendingBans.get(message.author.id);
+
     if (message.guild) {
       const server = this.servers.find((server) => {
         if (message.guild?.id && message.guild.id === server.serverId) {
@@ -559,7 +561,7 @@ export class CommunalMod {
       });
 
       if (!server) return;
-      if (!message.content.startsWith("!")) return;
+      if (!pendingBans && !message.content.startsWith("!")) return;
     }
 
     if (!(await this.userIsWhitelisted(message.author.id))) {
@@ -573,7 +575,6 @@ export class CommunalMod {
 
     const msgContent = message.content.toLowerCase();
 
-    const pendingBans = this.pendingBans.get(message.author.id);
     if (pendingBans) {
       if (/\s*(yes|y)\s*/g.test(msgContent)) {
         const { ids, commandType, reason } = pendingBans;
