@@ -598,8 +598,12 @@ export class CommunalMod {
       /\s*!ban (--username\s+)?(\d{18}\s*)+(--reason\s*.*)?/g;
     const serverCommandPattern = /\s*!servers\s*/g;
     const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
-    const raidCommandPattern =
-      /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+
+    let raidCommandPattern = /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+    
+    if (message.channel.type != "dm") {
+      raidCommandPattern = /\s*!raid\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+    }
 
     if (banCommandPattern.test(msgContent)) {
       this.banCommand(message);
@@ -610,8 +614,13 @@ export class CommunalMod {
     } else if (raidCommandPattern.test(msgContent)) {
       const raidCommandExec = raidCommandPattern.exec(msgContent);
       if (raidCommandExec) {
-        const [_, server, user, before, after] = raidCommandExec;
-        this.raidCommand(message, server, user, before, after);
+        if (message.channel.type === "dm") {
+          const [_, server, user, before, after] = raidCommandExec;
+          this.raidCommand(message, server, user, before, after);
+        } else {
+          const [_, user, before, after] = raidCommandExec;
+          this.raidCommand(message, message.channel.guild.id, user, before, after);
+        }
       }
     } else {
       const response = new Discord.MessageEmbed();
