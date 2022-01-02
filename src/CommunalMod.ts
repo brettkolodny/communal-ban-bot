@@ -3,6 +3,16 @@ import { ServerSettings } from "./ServerSettings";
 
 const MOD_REASON = "Operation by Communal Mod:";
 const MESSAGE_COLOR = 0xc2a2e9;
+const startTime = new Date();
+let lastJoinTime = startTime
+let consecutiveJoins = 0
+let activeRaid = false
+const adminChannelId = process.env.CHANNEL_ID
+const jointime_threshold = process.env.JOINTIME_THRESHOLD
+const joinnumber_threshold = process.env.JOINNUMBER_THRESHOLD
+const notify_id_array = process.env.NOTIFY_ID_LIST!.split(" ")
+const raid_ban_radius = process.env.RAID_BAN_RADIUS
+const whitelisted_roles = process.env.WHITELISTED_ROLES!.split(" ")
 
 enum CommandType {
   BAN = 0,
@@ -44,14 +54,14 @@ export class CommunalMod {
 
     this.client.on("guildBanAdd", (guild, user) =>
       this.onGuildBanAdd(guild, user)
-    );
+    );  
 
     this.client.on("guildMemberAdd", (member) =>
-      this.onGuildMemberAddOrUpdate(member)
-    );
+      this.onGuildMemberAdd(member)
+  );
 
     this.client.on("guildMemberUpdate", (_, member) =>
-      this.onGuildMemberAddOrUpdate(member)
+      this.onGuildMemberUpdate(member)
     );
   }
 
@@ -391,12 +401,11 @@ export class CommunalMod {
 
   private async raidCommand(
     message: Discord.Message,
-    serverId: string,
     userId: string,
     before: string,
     after: string
   ) {
-    let guild = this.client.guilds.cache.find((guild) => guild.id === serverId);
+    let guild = this.client.guilds.cache.find((guild) => guild.id === process.env.SERVER_ID!);
 
     if (!guild) {
       this.sendError(message, "This bot is not on the given server");
@@ -598,12 +607,8 @@ export class CommunalMod {
       /\s*!ban (--username\s+)?(\d{18}\s*)+(--reason\s*.*)?/g;
     const serverCommandPattern = /\s*!servers\s*/g;
     const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
-
-    let raidCommandPattern = /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
-    
-    if (message.channel.type != "dm") {
-      raidCommandPattern = /\s*!raid\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
-    }
+    const raidCommandPattern =
+      /\s*!raid\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
 
     if (banCommandPattern.test(msgContent)) {
       this.banCommand(message);
@@ -614,13 +619,8 @@ export class CommunalMod {
     } else if (raidCommandPattern.test(msgContent)) {
       const raidCommandExec = raidCommandPattern.exec(msgContent);
       if (raidCommandExec) {
-        if (message.channel.type === "dm") {
-          const [_, server, user, before, after] = raidCommandExec;
-          this.raidCommand(message, server, user, before, after);
-        } else {
-          const [_, user, before, after] = raidCommandExec;
-          this.raidCommand(message, message.channel.guild.id, user, before, after);
-        }
+        const [_, user, before, after] = raidCommandExec;
+        this.raidCommand(message, user, before, after);
       }
     } else {
       const response = new Discord.MessageEmbed();
@@ -653,28 +653,108 @@ export class CommunalMod {
     this.crossServerBan([user.id], ban.reason, { guild });
   }
 
-  private async onGuildMemberAddOrUpdate(member: Discord.GuildMember) {
+  private async onGuildMemberAdd(member: Discord.GuildMember) {
+
+    this.RaidCheck(member.guild.id, member.id);
+    this.checkName(member)
+  }
+
+  private async onGuildMemberUpdate(member: Discord.GuildMember){
+    this.checkName(member)
+  }
+
+  private async checkName(member: Discord.GuildMember){
+
     const server = this.servers.find(
       (server) => server.serverId === member.guild.id
     );
 
+    let guild = this.client.guilds.cache.find((guild) => guild.id === process.env.SERVER_ID!);
+
     if (!server) {
+      console.log("Cannot find server.")
       return;
     }
 
-    if (server.whitelist.includes(member.user.id)) {
+    if (!guild) {
+      console.log("This bot is not on the given server")
+      return;
+    }
+
+    if (server.whitelist.includes(member.user.id) 
+        || await this.userIsModOfGuild(member.id, guild
+        || member.roles.cache.some(role => whitelisted_roles.includes(role.id)))) {
       return;
     }
 
     const username = member.user.username.toLowerCase();
+    const servername = member.displayName.toLowerCase();
+
     for (const word of server.blacklist) {
-      if (username.includes(word.toLowerCase())) {
+      if (username.includes(word) || servername.includes(word)) {
         member
-          .ban({ days: 7, reason: `${MOD_REASON} Username on blacklistcd` })
+          .ban({ days: 7, reason: `${MOD_REASON} Username or server display name includes a word from the blacklist.` })
           .catch((error) => {
             console.log(error);
           });
       }
     }
+
+  }
+
+  private async RaidCheck(serverId: string, memberID: string) {
+
+    const adminChannel = this.getChannel(serverId, adminChannelId!)
+    const currentTime = new Date();
+    const elapsedTime = currentTime.getTime() - lastJoinTime.getTime()
+  
+    //console.log(jointime_threshold)
+    //console.log(joinnumber_threshold)
+    console.log(`current time = ` + currentTime.getTime())
+  
+    const timeDiff = elapsedTime / 1000;
+  
+    // get seconds
+    const seconds = Math.round(timeDiff);
+    console.log(`elapsed time = ` + seconds + " seconds");
+  
+    if (seconds < +jointime_threshold!) {
+      consecutiveJoins++
+      console.log(`I saw a consectutive join`)
+  
+      if (consecutiveJoins > +joinnumber_threshold! && !activeRaid) {
+        activeRaid = true
+        console.log(`I saw more than ` + joinnumber_threshold! + ` consecutive joins!`)
+
+        let message_text = `Possible Raid Alert: ` + joinnumber_threshold! + ` accounts or more accounts joined in ` + jointime_threshold! + ` seconds`
+
+        notify_id_array.forEach(function (item, index) {
+          message_text += '<@'+ item + '>';
+        });
+        adminChannel.send(message_text)
+        //adminChannel.send(`Possible Raid Alert: ` + joinnumber_threshold! + ` accounts or more accounts joined in ` + jointime_threshold! + `seconds <@&748920690106826894> <@&748920030074372217>`)
+        //adminChannel.send(`A MASS DM SPAMBOT MIGHT BE JOINING OUR SERVER! <@831914514064474172> <@382638955411013636> <@823601445689491496> <@&748920690106826894> <@&748920030074372217>`)
+        adminChannel.send(`Can someone please monitor the arrivals-lounge channel and use the raid command to ban these accounts? The user that joined last has the ID: `+ "`" + memberID + "`" +`.`)
+        adminChannel.send(`The raid command format is:`+ "```" + "!raid --user "+ memberID +" --before " +raid_ban_radius!+ " --after " + raid_ban_radius! +"```")
+        
+      }
+    } else {
+      console.log(`Re-setting join detector` + consecutiveJoins)
+      consecutiveJoins = 0
+      activeRaid = false
+    }
+  
+    lastJoinTime = currentTime
+  
+    return
+  }
+
+  private getChannel(serverId: string, channelId: string) {
+    const server = this.client.guilds.cache.get(serverId)
+    if (server === undefined) throw new Error(`Bot not joined to server.`)
+    const channel = server.channels.cache.find(channel => channel.id === channelId)
+    //console.log("Channel id is: "+ channelId)
+    if (!(channel instanceof Discord.TextChannel)) throw new Error(`Join log channel is not a text channel.`)
+    return channel
   }
 }

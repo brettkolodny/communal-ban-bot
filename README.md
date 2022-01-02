@@ -26,11 +26,11 @@ For tightknit communities that have the same community guidelines this can great
   - Unbans the user with the given ID and inserts the given reason into the unban. The reason field is optional.
 
 ### Raid
-- `!raid --server <server id> --user <user id> --before <time before> --after <time after>`
+- `!raid --user <user id> --before <time before> --after <time after>`
    
    #### Example:
    ```
-   !raid --server 722223075629727774 --user 872776790370836501 --before 0 --after 1
+   !raid --user 872776790370836501 --before 0 --after 1
    ```
 
   - Bans all users in the server given from `<server id>` that joined at the same time as `<user id>`.
@@ -68,16 +68,43 @@ communalMod.addServer(server1);
 communalMod.login()
 ```
 
-## Testing
+## Environmental Variables
 
 To run the test bot create a `.env` file with like the following:
 
 ```
 BOT_TOKEN=<your bot secret token>
-ADMIN_ID=<discord admin id>
-SERVER1_ID=<first discord server id>
-SERVER2_ID=<second discord server id>
+ADMIN_ID=<discord admin id for the person in charge of the box>
+SERVER_ID=<discord server id>
 CHANNEL_ID=<discord channel id>
+BANNED_WORDS=<banned words in user names, delimited by space> 
+
+Example: "hello world test"
+
+JOINTIME_THRESHOLD=<the time period in seconds to count consecutive joins> 
+
+Example: "30" 
+
+JOINNUMBER_THRESHOLD=<threshold number of joins before the raid alert is triggered> 
+
+Example: "3"
+
+NODE_ENV=<set to 'prod' or 'test'> 
+
+Example: "prod"
+
+NOTIFY_ID_LIST=<ID's of people or roles to notify during a raid, delimited by space, Role ID's must be preceded by '&'> 
+
+Example: "123231233 122312332 &232132323 &1232323233"
+
+RAID_BAN_RADIUS=<time around the joining time of the user ID in the raid command to ban in minutes> 
+
+Example: "1"
+
+WHITELISTED_ROLES=<Role ID's to be excluded from name checking, delimited by space>
+
+Examples: "123231233 122312332"
+
 ```
 
 Then run `yarn start:dev` to start the bot.
