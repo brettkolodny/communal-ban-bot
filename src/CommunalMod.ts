@@ -735,7 +735,8 @@ export class CommunalMod {
         //adminChannel.send(`Possible Raid Alert: ` + joinnumber_threshold! + ` accounts or more accounts joined in ` + jointime_threshold! + `seconds <@&748920690106826894> <@&748920030074372217>`)
         //adminChannel.send(`A MASS DM SPAMBOT MIGHT BE JOINING OUR SERVER! <@831914514064474172> <@382638955411013636> <@823601445689491496> <@&748920690106826894> <@&748920030074372217>`)
         adminChannel.send(`Can someone please monitor the arrivals-lounge channel and use the raid command to ban these accounts? The user that joined last has the ID: `+ "`" + memberID + "`" +`.`)
-        adminChannel.send(`The raid command format is:`+ "```" + "!raid --user "+ memberID +" --before " +raid_ban_radius!+ " --after " + raid_ban_radius! +"```")
+        adminChannel.send(`The raid command format is: `)
+        adminChannel.send("```" + "!raid --user "+ memberID +" --before " +raid_ban_radius!+ " --after " + raid_ban_radius! +"```")
         
       }
     } else {
