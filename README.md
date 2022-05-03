@@ -26,6 +26,10 @@ For tightknit communities that have the same community guidelines this can great
   - Unbans the user with the given ID and inserts the given reason into the unban. The reason field is optional.
 
 ### Raid
+Through server channel
+- `!raid --user <user id> --before <time before> --after <time after>`
+
+Through DM
 - `!raid --server <server id> --user <user id> --before <time before> --after <time after>`
    
    #### Example:
