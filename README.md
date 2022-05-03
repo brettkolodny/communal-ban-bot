@@ -55,9 +55,11 @@ Through DM
 To set up your own Communal Mod all you have to do is define some servers and add them to an instance of the CommunalMod.
 
 ```js
-// The ServerSettings constructor takes a server, 
-// and an optional boolean for whether the server is whitelisted in the bot.
-const server1 = new ServerSettings("server id here", true);
+// The ServerSettings constructor takes a server ID, and optional settings for the bot 
+const server1 = new ServerSettings("server id", {
+  whitelisted: true,
+  allowedChannel: "channel id here",
+});
 
 // Set optional username blacklist for a server.
 server1.setBlacklist(["Scammer", "Real Airdrop", "Won't Steal Seed Phrase"]);
