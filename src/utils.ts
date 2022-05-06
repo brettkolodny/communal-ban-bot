@@ -12,6 +12,16 @@ export function replaceEvilLetters(inText: string) {
       outTextArray.push(char);
     }
   }
-  const outText = String.fromCharCode.apply(null, outTextArray);
+
+  const outText = outTextArray
+    .map((char) => {
+      if (typeof char === "number") {
+        return String.fromCharCode(char);
+      } else {
+        return char;
+      }
+    })
+    .join("");
+
   return outText;
 }
