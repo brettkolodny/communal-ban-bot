@@ -687,11 +687,19 @@ export class CommunalMod {
     for (const word of server.blacklist) {
       const sanitizedUsername = replaceEvilLetters(username);
       if (sanitizedUsername.includes(word.toLowerCase())) {
-        member
-          .ban({ days: 7, reason: `${MOD_REASON} Username on blacklistcd` })
-          .catch((error) => {
-            console.log(error);
-          });
+        console.log(
+          `Banning ${username} from ${server.serverId} due to blacklist`
+        );
+
+        if (process.env.NODE_ENV === "prod") {
+          member
+            .ban({ days: 7, reason: `${MOD_REASON} Username on blacklistcd` })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+
+        break;
       }
     }
   }
