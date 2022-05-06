@@ -1,5 +1,6 @@
 import * as Discord from "discord.js";
 import { ServerSettings } from "./ServerSettings";
+import { replaceEvilLetters } from "./utils";
 
 const MOD_REASON = "Operation by Communal Mod:";
 const MESSAGE_COLOR = 0xc2a2e9;
@@ -73,7 +74,9 @@ export class CommunalMod {
     givenReason = givenReason ? givenReason : "No reason given";
 
     if (!options || !options.message) {
-      const server = this.servers.find((server) => server.serverId === guild.id);
+      const server = this.servers.find(
+        (server) => server.serverId === guild.id
+      );
       if (server && !server.acceptAllBans) return;
     }
 
@@ -311,7 +314,7 @@ export class CommunalMod {
       const response = new Discord.MessageEmbed();
       response.setTitle("**No users to ban**");
       response.setColor(MESSAGE_COLOR);
-  
+
       message.reply(response);
       return;
     }
@@ -403,7 +406,7 @@ export class CommunalMod {
       return;
     }
 
-    if (!await this.userIsModOfGuild(message.author.id, guild)) {
+    if (!(await this.userIsModOfGuild(message.author.id, guild))) {
       this.sendError(message, `You are not a moderator of ${guild.name}`);
       return;
     }
@@ -482,16 +485,22 @@ export class CommunalMod {
     message.reply(response);
   }
 
-  async userIsModOfGuild(userId: string, guild: string | Discord.Guild): Promise<boolean> {
-    if (typeof(guild) === "string") {
-      const guildInstance = this.client.guilds.cache.find(g => g.id === guild);
+  async userIsModOfGuild(
+    userId: string,
+    guild: string | Discord.Guild
+  ): Promise<boolean> {
+    if (typeof guild === "string") {
+      const guildInstance = this.client.guilds.cache.find(
+        (g) => g.id === guild
+      );
       if (!guildInstance) return false;
-      guild = guildInstance
+      guild = guildInstance;
     }
 
     try {
       const member = await guild.members.fetch(userId);
-      if (member && member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)) return true;
+      if (member && member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS))
+        return true;
     } catch {}
 
     return false;
@@ -548,7 +557,7 @@ export class CommunalMod {
 
   private async onMessage(message: Discord.Message) {
     if (message.author.id === this.client.user!.id) return;
-    
+
     const pendingBans = this.pendingBans.get(message.author.id);
 
     if (message.guild) {
@@ -556,7 +565,7 @@ export class CommunalMod {
         if (message.guild?.id && message.guild.id === server.serverId) {
           return server.allowedChannel === message.channel.id;
         }
-        
+
         return false;
       });
 
@@ -599,10 +608,12 @@ export class CommunalMod {
     const serverCommandPattern = /\s*!servers\s*/g;
     const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
 
-    let raidCommandPattern = /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
-    
+    let raidCommandPattern =
+      /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+
     if (message.channel.type != "dm") {
-      raidCommandPattern = /\s*!raid\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+      raidCommandPattern =
+        /\s*!raid\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
     }
 
     if (banCommandPattern.test(msgContent)) {
@@ -619,7 +630,13 @@ export class CommunalMod {
           this.raidCommand(message, server, user, before, after);
         } else {
           const [_, user, before, after] = raidCommandExec;
-          this.raidCommand(message, message.channel.guild.id, user, before, after);
+          this.raidCommand(
+            message,
+            message.channel.guild.id,
+            user,
+            before,
+            after
+          );
         }
       }
     } else {
@@ -668,12 +685,21 @@ export class CommunalMod {
 
     const username = member.user.username.toLowerCase();
     for (const word of server.blacklist) {
-      if (username.includes(word.toLowerCase())) {
-        member
-          .ban({ days: 7, reason: `${MOD_REASON} Username on blacklistcd` })
-          .catch((error) => {
-            console.log(error);
-          });
+      const sanitizedUsername = replaceEvilLetters(username);
+      if (sanitizedUsername.includes(word.toLowerCase())) {
+        console.log(
+          `Banning ${username} from ${server.serverId} due to blacklist`
+        );
+
+        if (process.env.NODE_ENV === "prod") {
+          member
+            .ban({ days: 7, reason: `${MOD_REASON} Username on blacklistcd` })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+
+        break;
       }
     }
   }
