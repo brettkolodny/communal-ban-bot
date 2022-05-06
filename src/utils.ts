@@ -1,9 +1,4 @@
-import fs from "fs";
-import path from "path";
-
-const evilKeys = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "./imposter_letters.json"), "utf8")
-);
+import evilKeys from "./imposter_letters";
 
 export function replaceEvilLetters(inText: string) {
   const outTextArray = [];
@@ -11,7 +6,7 @@ export function replaceEvilLetters(inText: string) {
   for (const char of inText) {
     const key = char.codePointAt(0);
     if (key && key in evilKeys) {
-      const new_character = evilKeys[key];
+      const new_character = (evilKeys as any)[key];
       outTextArray.push(new_character);
     } else {
       outTextArray.push(char);

@@ -14,11 +14,14 @@ if (
 }
 
 const testServer = new ServerSettings(process.env.SERVER1_ID, {
-  whitelisted: true
+  whitelisted: true,
 });
 testServer.allowedChannel = process.env.CHANNEL_ID;
 
-const testServer2 = new ServerSettings(process.env.SERVER2_ID, { whitelisted: true });
+const testServer2 = new ServerSettings(process.env.SERVER2_ID, {
+  whitelisted: true,
+});
+testServer2.blacklist = ["captcha"];
 
 const mod = new CommunalMod(process.env.BOT_TOKEN, process.env.ADMIN_ID);
 mod.addServer(testServer);
