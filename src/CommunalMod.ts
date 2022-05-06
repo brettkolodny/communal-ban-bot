@@ -1,5 +1,6 @@
 import * as Discord from "discord.js";
 import { ServerSettings } from "./ServerSettings";
+import { replaceEvilLetters } from "./utils"
 
 const MOD_REASON = "Operation by Communal Mod:";
 const MESSAGE_COLOR = 0xc2a2e9;
@@ -668,7 +669,8 @@ export class CommunalMod {
 
     const username = member.user.username.toLowerCase();
     for (const word of server.blacklist) {
-      if (username.includes(word.toLowerCase())) {
+      const sanitizedUsername = replaceEvilLetters(username);
+      if (sanitizedUsername.includes(word.toLowerCase())) {
         member
           .ban({ days: 7, reason: `${MOD_REASON} Username on blacklistcd` })
           .catch((error) => {
