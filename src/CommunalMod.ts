@@ -54,7 +54,9 @@ export class CommunalMod {
 
     this.client.on("guildBanAdd", (guild, user) =>
     {
-      //this.onGuildBanAdd(guild, user)
+      if (user instanceof Discord.User){
+        this.onGuildBanAdd(guild, user)
+      }
     }
     );  
 
@@ -64,7 +66,9 @@ export class CommunalMod {
 
     this.client.on("guildMemberUpdate", (_, member) =>
     {
-      //this.onGuildMemberUpdate(member)
+      if (member instanceof Discord.User) {
+        this.onGuildMemberUpdate(member)
+      }
     }
     );
   }
