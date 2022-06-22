@@ -52,17 +52,17 @@ export class CommunalMod {
 
     this.client.on("message", (message) => this.onMessage(message));
 
-    this.client.on("guildBanAdd", (guild, user) =>
-      this.onGuildBanAdd(guild, user)
-    );  
+    //this.client.on("guildBanAdd", (guild, user) =>
+      //this.onGuildBanAdd(guild, user!)
+    //);  
 
     this.client.on("guildMemberAdd", (member) =>
       this.onGuildMemberAdd(member)
   );
 
-    this.client.on("guildMemberUpdate", (_, member) =>
-      this.onGuildMemberUpdate(member)
-    );
+    //this.client.on("guildMemberUpdate", (_, member) =>
+      //this.onGuildMemberUpdate(member!)
+    //);
   }
 
   public addServer(server: ServerSettings) {
