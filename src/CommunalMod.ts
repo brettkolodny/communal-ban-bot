@@ -53,8 +53,10 @@ export class CommunalMod {
     this.client.on("message", (message) => this.onMessage(message));
 
     this.client.on("guildBanAdd", (guild, user) => {
-      //console.log(user)
-      this.onGuildBanAdd(guild, user);
+      console.log(user)
+      if (user instanceof Discord.User){
+        this.onGuildBanAdd(guild, user);
+      }
     }
     );  
 
@@ -63,8 +65,10 @@ export class CommunalMod {
   );
 
     this.client.on("guildMemberUpdate", (_, member) => {
-      //console.log(member);
-      this.onGuildMemberUpdate(member);
+      console.log(member);
+      if (member instanceof Discord.User) {
+        this.onGuildMemberUpdate(member);
+      }
     }
     );
   }
