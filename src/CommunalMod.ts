@@ -53,7 +53,9 @@ export class CommunalMod {
     this.client.on("message", (message) => this.onMessage(message));
 
     this.client.on("guildBanAdd", (guild, user) =>
-      this.onGuildBanAdd(guild, user)
+    {
+      //this.onGuildBanAdd(guild, user)
+    }
     );  
 
     this.client.on("guildMemberAdd", (member) =>
@@ -61,7 +63,9 @@ export class CommunalMod {
   );
 
     this.client.on("guildMemberUpdate", (_, member) =>
-      this.onGuildMemberUpdate(member)
+    {
+      //this.onGuildMemberUpdate(member)
+    }
     );
   }
 
