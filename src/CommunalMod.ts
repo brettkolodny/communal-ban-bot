@@ -52,16 +52,24 @@ export class CommunalMod {
 
     this.client.on("message", (message) => this.onMessage(message));
 
-    this.client.on("guildBanAdd", (guild, user) =>
-      this.onGuildBanAdd(guild, user)
+    this.client.on("guildBanAdd", (guild, user) => {
+      console.log(user)
+      if (user instanceof Discord.User){
+        this.onGuildBanAdd(guild, user);
+      }
+    }
     );  
 
     this.client.on("guildMemberAdd", (member) =>
       this.onGuildMemberAdd(member)
   );
 
-    this.client.on("guildMemberUpdate", (_, member) =>
-      this.onGuildMemberUpdate(member)
+    this.client.on("guildMemberUpdate", (_, member) => {
+      console.log(member);
+      if (member instanceof Discord.User) {
+        this.onGuildMemberUpdate(member);
+      }
+    }
     );
   }
 
