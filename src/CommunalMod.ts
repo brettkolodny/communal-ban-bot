@@ -1,4 +1,5 @@
 import * as Discord from "discord.js";
+import { Intents } from "discord.js";
 import { ServerSettings } from "./ServerSettings";
 const { Routes } = require('discord-api-types/v9');
 const fs = require('node:fs');
@@ -43,7 +44,9 @@ export class CommunalMod {
   private adminId: string;
 
   constructor(token: string, adminId: string) {
-    this.client = new Discord.Client();
+    this.client = new Discord.Client({
+      intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES]
+    });
     this.token = token;
     this.adminId = adminId;
 
@@ -53,16 +56,14 @@ export class CommunalMod {
       }
 
       const commands = [];
-      const commandFiles = fs.readdirSync('./commands').filter((file: string) => file.endsWith('.js'));
-
-      // Place your client and guild ids here
       const clientId = client_id;
       const guildId = guild_id;
 
-      for (const file of commandFiles) {
-        const command = require(`./commands/${file}`);
-        commands.push(command.data.toJSON());
-      }
+      commands.push({
+        options: [],
+        name: 'ping',
+        description: 'Replies with Pong!'
+      })
 
       const rest = new REST({ version: '9' }).setToken(token);
 
@@ -84,15 +85,22 @@ export class CommunalMod {
       console.log("Ready to moderate");
     });
 
+    this.client.on('interactionCreate', async interaction => {
+      if (!interaction.isCommand()) return;
+
+      if (interaction.commandName === 'ping') {
+        await interaction.reply('Pong!');
+      }
+    });
+
     this.client.on("message", (message) => this.onMessage(message));
 
-    this.client.on("guildBanAdd", (guild, user) =>
+    
+    this.client.on("guildBanAdd", async (ban) =>
     {
-      if (user instanceof Discord.User){
-        this.onGuildBanAdd(guild, user)
-      }
-    }
-    );  
+        this.onGuildBanAdd(ban.guild, ban.user)
+
+    });  
 
     this.client.on("guildMemberAdd", (member) =>
       this.onGuildMemberAdd(member)
@@ -202,7 +210,7 @@ export class CommunalMod {
       response.setTitle("**All Bans Processed**");
       response.setColor(MESSAGE_COLOR);
 
-      options.message.reply(response);
+      options.message.reply({ embeds: [response]});
     }
   }
 
@@ -226,7 +234,7 @@ export class CommunalMod {
       response.setTitle("**All Unbans Processed**");
       response.setColor(MESSAGE_COLOR);
 
-      options.message.reply(response);
+      options.message.reply({embeds: [response]});
     }
   }
 
@@ -290,7 +298,7 @@ export class CommunalMod {
     response.setDescription(description);
     response.setColor(MESSAGE_COLOR);
 
-    message.reply(response);
+    message.reply({embeds: [response]});
   }
 
   private async banCommand(message: Discord.Message) {
@@ -364,7 +372,7 @@ export class CommunalMod {
       response.setTitle("**No users to ban**");
       response.setColor(MESSAGE_COLOR);
   
-      message.reply(response);
+      message.reply({ embeds: [response] });
       return;
     }
 
@@ -386,7 +394,7 @@ export class CommunalMod {
     response.setFooter("Types [y]es to confirm or anything else to cancel");
     response.setColor(MESSAGE_COLOR);
 
-    message.reply(response);
+    message.reply({ embeds: [response] });
   }
 
   private async unbanCommand(message: Discord.Message) {
@@ -438,7 +446,7 @@ export class CommunalMod {
     response.setFooter("Types [y]es to confirm or anything else to cancel");
     response.setColor(MESSAGE_COLOR);
 
-    message.reply(response);
+    message.reply({ embeds: [response] });
   }
 
   private async raidCommand(
@@ -522,7 +530,7 @@ export class CommunalMod {
     response.setFooter("Types [y]es to confirm or anything else to cancel");
     response.setColor(MESSAGE_COLOR);
 
-    message.reply(response);
+    message.reply({ embeds: [response] });
   }
 
   private sendError(message: Discord.Message, error: string) {
@@ -530,7 +538,7 @@ export class CommunalMod {
     response.setTitle("**Error**");
     response.setDescription(error);
     response.setColor(0xff0000);
-    message.reply(response);
+    message.reply({ embeds: [response] });
   }
 
   async userIsModOfGuild(userId: string, guild: string | Discord.Guild): Promise<boolean> {
@@ -542,7 +550,7 @@ export class CommunalMod {
 
     try {
       const member = await guild.members.fetch(userId);
-      if (member && member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)) return true;
+      if (member && member.permissions.has(Discord.Permissions.FLAGS.BAN_MEMBERS)) return true;
     } catch {}
 
     return false;
@@ -558,7 +566,7 @@ export class CommunalMod {
             const member = await guild.members.fetch(userId);
             if (
               member &&
-              member.hasPermission(Discord.Permissions.FLAGS.BAN_MEMBERS)
+              member.permissions.has(Discord.Permissions.FLAGS.BAN_MEMBERS)
             ) {
               return true;
             }
@@ -590,7 +598,7 @@ export class CommunalMod {
         );
         response.setColor(0xff0000);
 
-        dmChannel.send(response);
+        dmChannel.send({ embeds: [response] });
       }
     });
 
@@ -638,7 +646,7 @@ export class CommunalMod {
         const response = new Discord.MessageEmbed();
         response.setTitle("**Canceling Command**");
         response.setColor(MESSAGE_COLOR);
-        message.reply(response);
+        message.reply({ embeds: [response] });
       }
 
       this.pendingBans.delete(message.author.id);
@@ -673,12 +681,12 @@ export class CommunalMod {
       );
       response.setColor(0xff0000);
 
-      message.reply(response);
+      message.reply({ embeds: [response] });
     }
   }
 
   private async onGuildBanAdd(guild: Discord.Guild, user: Discord.User) {
-    const server = this.servers.find(
+    const server = this.servers.find( 
       (server) => server.serverId === guild.id && server.whitelisted
     );
 
@@ -686,13 +694,13 @@ export class CommunalMod {
       return;
     }
 
-    const ban = await guild.fetchBan(user.id);
+    const ban = await guild.bans.fetch(user.id);
 
     if (!ban || (ban.reason && ban.reason.startsWith(MOD_REASON))) {
       return;
     }
 
-    this.crossServerBan([user.id], ban.reason, { guild });
+    this.crossServerBan([user.id], ban.reason!, { guild });
   }
 
   private async onGuildMemberAdd(member: Discord.GuildMember) {
