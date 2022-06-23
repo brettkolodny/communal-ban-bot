@@ -60,7 +60,7 @@ export class CommunalMod {
       const guildId = guild_id;
 
       for (const file of commandFiles) {
-        const command = require(`./commands/${file}`);
+        const command = require(`./src/commands/${file}`);
         commands.push(command.data.toJSON());
       }
 
