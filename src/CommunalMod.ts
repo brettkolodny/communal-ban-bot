@@ -52,9 +52,17 @@ export class CommunalMod {
         console.log("Running in DEV");
       }
 
+      const commands = [];
+      const commandFiles = fs.readdirSync('./commands').filter((file: string) => file.endsWith('.js'));
+
       // Place your client and guild ids here
       const clientId = client_id;
       const guildId = guild_id;
+
+      for (const file of commandFiles) {
+        const command = require(`./commands/${file}`);
+        commands.push(command.data.toJSON());
+      }
 
       const rest = new REST({ version: '9' }).setToken(token);
 
@@ -64,14 +72,7 @@ export class CommunalMod {
 
           await rest.put(
             Routes.applicationGuildCommands(clientId, guildId),
-            {
-              body: {
-                data: {
-                  name: 'ping',
-                  description: 'ping pong!'
-                }
-              }
-              },
+            { body: commands },
           );
 
           console.log('Successfully reloaded application (/) commands.');
