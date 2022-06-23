@@ -53,7 +53,7 @@ export class CommunalMod {
       }
 
       const commands = [];
-      const commandFiles = fs.readdirSync('./commands').filter((file: string) => file.endsWith('.js'));
+      const commandFiles = fs.readdirSync('./src/commands').filter((file: string) => file.endsWith('.js'));
 
       // Place your client and guild ids here
       const clientId = client_id;
