@@ -45,7 +45,7 @@ export class CommunalMod {
 
   constructor(token: string, adminId: string) {
     this.client = new Discord.Client({
-      intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES]
+      intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_BANS, Intents.FLAGS.DIRECT_MESSAGES]
     });
     this.token = token;
     this.adminId = adminId;
