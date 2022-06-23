@@ -1,5 +1,8 @@
 import * as Discord from "discord.js";
 import { ServerSettings } from "./ServerSettings";
+const { Routes } = require('discord-api-types/v9');
+const fs = require('node:fs');
+const { REST } = require('@discordjs/rest');
 
 const MOD_REASON = "Operation by Communal Mod:";
 const MESSAGE_COLOR = 0xc2a2e9;
@@ -13,6 +16,8 @@ const joinnumber_threshold = process.env.JOINNUMBER_THRESHOLD
 const notify_id_array = process.env.NOTIFY_ID_LIST!.split(" ")
 const raid_ban_radius = process.env.RAID_BAN_RADIUS
 const whitelisted_roles = process.env.WHITELISTED_ROLES!.split(" ")
+const client_id = process.env.CLIENT_ID
+const guild_id = process.env.SERVER_ID
 
 enum CommandType {
   BAN = 0,
@@ -46,6 +51,35 @@ export class CommunalMod {
       if (process.env.NODE_ENV != "prod") {
         console.log("Running in DEV");
       }
+
+      const commands = [];
+      const commandFiles = fs.readdirSync('./commands').filter((file: string) => file.endsWith('.js'));
+
+      // Place your client and guild ids here
+      const clientId = client_id;
+      const guildId = guild_id;
+
+      for (const file of commandFiles) {
+        const command = require(`./commands/${file}`);
+        commands.push(command.data.toJSON());
+      }
+
+      const rest = new REST({ version: '9' }).setToken(token);
+
+      (async () => {
+        try {
+          console.log('Started refreshing application (/) commands.');
+
+          await rest.put(
+            Routes.applicationGuildCommands(clientId, guildId),
+            { body: commands },
+          );
+
+          console.log('Successfully reloaded application (/) commands.');
+        } catch (error) {
+          console.error(error);
+        }
+      })();
 
       console.log("Ready to moderate");
     });
