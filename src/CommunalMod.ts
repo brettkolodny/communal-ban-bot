@@ -95,7 +95,7 @@ export class CommunalMod {
 
     this.client.on("message", (message) => this.onMessage(message));
 
-    
+
     this.client.on("guildBanAdd", async (ban) =>
     {
         this.onGuildBanAdd(ban.guild, ban.user)
@@ -108,9 +108,7 @@ export class CommunalMod {
 
     this.client.on("guildMemberUpdate", (_, member) =>
     {
-      if (member instanceof Discord.User) {
         this.onGuildMemberUpdate(member)
-      }
     }
     );
   }
