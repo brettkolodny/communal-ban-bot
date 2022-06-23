@@ -66,9 +66,12 @@ export class CommunalMod {
             Routes.applicationGuildCommands(clientId, guildId),
             {
               body: {
-                name: 'ping',
-                description: 'ping pong!'
-              } },
+                data: {
+                  name: 'ping',
+                  description: 'ping pong!'
+                }
+              }
+              },
           );
 
           console.log('Successfully reloaded application (/) commands.');
