@@ -1,6 +1,9 @@
 import * as Discord from "discord.js";
 import { Intents } from "discord.js";
 import { ServerSettings } from "./ServerSettings";
+import { ethers } from 'ethers';
+import { SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const { Routes } = require('discord-api-types/v9');
 const fs = require('node:fs');
 const { REST } = require('@discordjs/rest');
@@ -19,6 +22,26 @@ const raid_ban_radius = process.env.RAID_BAN_RADIUS
 const whitelisted_roles = process.env.WHITELISTED_ROLES!.split(" ")
 const client_id = process.env.CLIENT_ID
 const guild_id = process.env.SERVER_ID
+const method_signature = '0x70a08231'
+const NFT_contract = '0xe30dBeD16B994C7E563a524827DCa05E28b28f05'
+const NFT_role_ID = "989821037699010560"
+
+
+const providerRPC = {
+  moonbase: {
+    name: 'moonbase-alpha',
+    rpc: 'https://rpc.api.moonbase.moonbeam.network',
+    chainId: 1287, // 0x507 in hex,
+  },
+};
+
+const jsonrpcprovider = new ethers.providers.JsonRpcProvider(
+  providerRPC.moonbase.rpc,
+  {
+    chainId: providerRPC.moonbase.chainId,
+    name: providerRPC.moonbase.name,
+  }
+)
 
 enum CommandType {
   BAN = 0,
@@ -56,14 +79,25 @@ export class CommunalMod {
       }
 
       const commands = [];
-      const clientId = client_id;
-      const guildId = guild_id;
 
-      commands.push({
-        options: [],
-        name: 'ping',
-        description: 'Replies with Pong!'
-      })
+      const command_data = new SlashCommandBuilder()
+        .setName('verifynft')
+        .setDescription('Verify the ownership of your Moonbuilder Club NFT')
+        .addStringOption((option: { setName: (arg0: string) => { (): any; new(): any; setDescription: { (arg0: string): { (): any; new(): any; setRequired: { (arg0: boolean): any; new(): any; }; }; new(): any; }; }; }) =>
+          option.setName('address')
+            .setDescription('The wallet that holds the Moonbuilder Club NFT')
+            .setRequired(true))
+        .addStringOption((option: { setName: (arg0: string) => { (): any; new(): any; setDescription: { (arg0: string): { (): any; new(): any; setRequired: { (arg0: boolean): any; new(): any; }; }; new(): any; }; }; }) =>
+          option.setName('signature')
+            .setDescription('The hexadecimal signed message of your Discord account name tag')
+            .setRequired(true))
+
+      const command_data2 = new SlashCommandBuilder()
+        .setName('verifyhelp')
+        .setDescription('Instructions for how to verify the ownership of your Moonbuilder Club NFT')
+
+      commands.push(command_data.toJSON());
+      commands.push(command_data2.toJSON());
 
       const rest = new REST({ version: '9' }).setToken(token);
 
@@ -72,7 +106,7 @@ export class CommunalMod {
           console.log('Started refreshing application (/) commands.');
 
           await rest.put(
-            Routes.applicationGuildCommands(clientId, guildId),
+            Routes.applicationGuildCommands(client_id, guild_id),
             { body: commands },
           );
 
@@ -86,15 +120,84 @@ export class CommunalMod {
     });
 
     this.client.on('interactionCreate', async interaction => {
+
       if (!interaction.isCommand()) return;
 
-      if (interaction.commandName === 'ping') {
-        await interaction.reply('Pong!');
+      // Verify NFT command logic
+      if (interaction.commandName === 'verifynft') {
+        //Input checking
+
+        var signature = interaction.options.getString('signature');
+        var wallet = interaction.options.getString('address');
+        const plaintext = interaction.user.tag;
+        var address = '';
+
+        // if signature not prefixe by 0x, add 0x
+        if (signature?.indexOf('0x') != 0){
+          signature = '0x' + signature
+        }
+        // Check address formatting
+        try {
+          wallet = ethers.utils.getAddress(wallet!)
+        }
+        catch (err) {
+          interaction.reply({ content: 'Address provided is not a valid H160 address.', ephemeral: true })
+          return
+        }
+        console.log(plaintext)
+        console.log(interaction.options.getString('signature'))
+        try {
+          address = ethers.utils.verifyMessage(plaintext, signature);
+        }
+        catch(err) {
+          interaction.reply({ content: 'Signature provided is not a valid ECSDA signature.', ephemeral: true })
+          return
+        }
+        if (address.toLowerCase == wallet!.toLowerCase) {
+
+          // Form the RPC request to check for NFT balance
+          var request = {
+                  "to" : NFT_contract,
+                  "data": method_signature +'000000000000000000000000'+wallet.substring(2)
+           }; 
+
+          var response;
+
+          try {
+            response = await jsonrpcprovider.send("eth_call", [request, "latest"]); 
+          }
+          catch (err){
+            console.log("RPC request failed.")
+            interaction.reply({ content: 'Failed to verify on-chain, please try again later.', ephemeral: true })
+            return
+          }
+
+          if (Number(response) > 0) {
+            const member = await interaction.guild?.members.fetch(interaction.user.id)
+            var role = interaction.guild?.roles.cache.find(r => r.id === NFT_role_ID);
+            member?.roles.add(role!)
+            interaction.reply({ content: 'Congratulations! Your Moonbuilder NFT has been verified and you now have the Moonbuilder role and all the associated access!', ephemeral: true })
+          } else
+          {
+            interaction.reply({ content: 'Your signature matches, but your wallet address does not have the Moonbuilder NFT. If you believe this is a mistake, please contact an admin.', ephemeral: true })
+          }
+        }
+        else {
+          interaction.reply({ content: 'Your provided signature does not match with the address.', ephemeral: true })
+          return
+        }
+      }
+      
+      //Process the Verify Help command
+      if (interaction.commandName === 'verifyhelp') {
+          let embed = new Discord.MessageEmbed()
+            .setTitle("How to Verify Your Moonbuilder Club NFT")
+            .setDescription("To verify your Moonbuilder Club NFT, you need to generate a signed message with the same wallet address that you hold the NFT token on. \n\n The signing can be done on [Polkadot JS apps wallet](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fwss.api.moonbase.moonbeam.network#/signing), [MyEtherWallet](https://www.myetherwallet.com/wallet/sign), or [programmatically](https://docs.ethers.io/v5/api/signer/). For more detailed instructions on generating the signed message, please check the [guide](https://www.google.com/) here. \n\n The message you need to sign is your Discord account tag, which is: \n\n " + "```" + interaction.user.tag + "```" +"\n\n "+"After you have created the signed message, you can proceed to use the `/verifynft` bot slash command to verify your ownership and receive the Moonbuilder Club role.");
+          interaction.reply({ embeds: [embed] })
       }
     });
 
-    this.client.on("message", (message) => this.onMessage(message));
-
+    this.client.on("messageCreate", (message) => this.onMessage(message));
 
     this.client.on("guildBanAdd", async (ban) =>
     {
