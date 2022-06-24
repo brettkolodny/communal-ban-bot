@@ -63,10 +63,10 @@ export class CommunalMod {
         try {
           console.log('Started refreshing application (/) commands.');
 
-          await rest.put(
+          //await rest.put(
             //Routes.applicationGuildCommands(client_id, guild_id),
             //{ body: commands },
-          );
+          //);
 
           console.log('Successfully reloaded application (/) commands.');
         } catch (error) {
@@ -82,7 +82,7 @@ export class CommunalMod {
 
     });
 
-    this.client.on("message", (message) => this.onMessage(message));
+    this.client.on("messageCreate", (message) => this.onMessage(message));
 
 
     this.client.on("guildBanAdd", async (ban) =>
