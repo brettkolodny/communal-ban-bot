@@ -55,15 +55,7 @@ export class CommunalMod {
         console.log("Running in DEV");
       }
 
-      const commands = [];
-      const clientId = client_id;
-      const guildId = guild_id;
-
-      commands.push({
-        options: [],
-        name: 'ping',
-        description: 'Replies with Pong!'
-      })
+      const commands: never[] = [];
 
       const rest = new REST({ version: '9' }).setToken(token);
 
@@ -72,7 +64,7 @@ export class CommunalMod {
           console.log('Started refreshing application (/) commands.');
 
           await rest.put(
-            Routes.applicationGuildCommands(clientId, guildId),
+            Routes.applicationGuildCommands(client_id, guild_id),
             { body: commands },
           );
 
@@ -88,9 +80,6 @@ export class CommunalMod {
     this.client.on('interactionCreate', async interaction => {
       if (!interaction.isCommand()) return;
 
-      if (interaction.commandName === 'ping') {
-        await interaction.reply('Pong!');
-      }
     });
 
     this.client.on("message", (message) => this.onMessage(message));
