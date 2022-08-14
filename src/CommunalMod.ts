@@ -245,7 +245,7 @@ export class CommunalMod {
   }
 
   private async banCommand(message: Discord.Message) {
-    const idPattern = /\d{18}/g;
+    const idPattern = /\d{18,19}/g;
     const usernamePattern = /--username\s*/g;
     const reasonPattern = /--reason\s*.*/g;
 
@@ -341,7 +341,7 @@ export class CommunalMod {
   }
 
   private async unbanCommand(message: Discord.Message) {
-    const idPattern = /\d{18}/g;
+    const idPattern = /\d{18,19}/g;
     const reasonPattern = /--reason\s*.*/g;
 
     const ids = message.content.match(idPattern);
@@ -604,16 +604,16 @@ export class CommunalMod {
     }
 
     const banCommandPattern =
-      /\s*!ban (--username\s+)?(\d{18}\s*)+(--reason\s*.*)?/g;
+      /\s*!ban (--username\s+)?(\d{18,19}\s*)+(--reason\s*.*)?/g;
     const serverCommandPattern = /\s*!servers\s*/g;
-    const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
+    const unbanCommandPattern = /\s*!unban (\d{18,19}\s*)+/g;
 
     let raidCommandPattern =
-      /\s*!raid\s+--server\s+(\d{18})\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+      /\s*!raid\s+--server\s+(\d{18,19})\s+--user\s+(\d{18,19})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
 
     if (message.channel.type != "dm") {
       raidCommandPattern =
-        /\s*!raid\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+        /\s*!raid\s+--user\s+(\d{18,19})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
     }
 
     if (banCommandPattern.test(msgContent)) {
