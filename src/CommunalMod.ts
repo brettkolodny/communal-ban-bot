@@ -22,24 +22,25 @@ const raid_ban_radius = process.env.RAID_BAN_RADIUS
 const whitelisted_roles = process.env.WHITELISTED_ROLES!.split(" ")
 const client_id = process.env.CLIENT_ID
 const guild_id = process.env.SERVER_ID
-const method_signature = '0x70a08231'
+const method_signature = '0x00fdd58e'
 const NFT_contract = '0xe30dBeD16B994C7E563a524827DCa05E28b28f05'
 const NFT_role_ID = "989821037699010560"
+const NFT_token_ID = "1"
 
 
 const providerRPC = {
-  moonbase: {
-    name: 'moonbase-alpha',
-    rpc: 'https://rpc.api.moonbase.moonbeam.network',
-    chainId: 1287, // 0x507 in hex,
+  moonbeam: {
+    name: 'moonbeam',
+    rpc: 'https://rpc.api.moonbeam.network',
+    chainId: 1284, // 0x507 in hex,
   },
 };
 
 const jsonrpcprovider = new ethers.providers.JsonRpcProvider(
-  providerRPC.moonbase.rpc,
+  providerRPC.moonbeam.rpc,
   {
-    chainId: providerRPC.moonbase.chainId,
-    name: providerRPC.moonbase.name,
+    chainId: providerRPC.moonbeam.chainId,
+    name: providerRPC.moonbeam.name,
   }
 )
 
@@ -158,7 +159,8 @@ export class CommunalMod {
           // Form the RPC request to check for NFT balance
           var request = {
                   "to" : NFT_contract,
-                  "data": method_signature +'000000000000000000000000'+wallet.substring(2)
+                  //We generate the request payload here for the "balanceOf" method
+                  "data": method_signature + '000000000000000000000000' + wallet.substring(2) + '000000000000000000000000000000000000000000000000000000000000000' + NFT_token_ID
            }; 
 
           var response;
