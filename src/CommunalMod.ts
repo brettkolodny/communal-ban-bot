@@ -194,7 +194,7 @@ export class CommunalMod {
       if (interaction.commandName === 'verifyhelp') {
           let embed = new Discord.MessageEmbed()
             .setTitle("How to Verify Your Moonbuilder Club NFT")
-            .setDescription("To verify your Moonbuilder Club NFT, you need to generate a signed message with the same wallet address that you hold the NFT token on. \n\n The signing can be done on [Moonscan](https://moonscan.io/verifiedSignatures). For more detailed instructions on generating the signed message, please check the [tutorial](https://www.google.com/) here. \n\n The message you need to sign is your Discord account tag, which is: \n\n " + "```" + interaction.user.tag + "```" +"\n\n "+"After you have created the signed message, you can proceed to use the `/verifynft` bot slash command to verify your ownership and receive the Moonbuilder-pioneer role.");
+            .setDescription("Test");
           interaction.reply({ embeds: [embed] })
       }
     });
