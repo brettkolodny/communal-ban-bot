@@ -158,9 +158,10 @@ export class CommunalMod {
 
           // Form the RPC request to check for NFT balance
           var request = {
-                  "to" : NFT_contract,       
-            "data": method_signature + '000000000000000000000000' + wallet.substring(2) +'000000000000000000000000000000000000000000000000000000000000000'+NFT_token_ID
-           }; 
+                  "to" : NFT_contract,
+                  //We generate the request payload here for the "balanceOf" method       
+                  "data": method_signature + '000000000000000000000000' + wallet.substring(2) +'000000000000000000000000000000000000000000000000000000000000000'+NFT_token_ID
+                }; 
 
           var response;
 
