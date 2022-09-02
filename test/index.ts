@@ -15,7 +15,11 @@ if (
   !process.env.NOTIFY_ID_LIST ||
   !process.env.RAID_BAN_RADIUS ||
   !process.env.WHITELISTED_ROLES ||
-  !process.env.CLIENT_ID
+  !process.env.CLIENT_ID ||
+  !process.env.NFT_VERIFY_METHOD_SIGNATURE ||
+  !process.env.NFT_CONTRACT ||
+  !process.env.NFT_ROLE_ID ||
+  !process.env.NFT_TOKEN_ID
 ) {
   console.log(process.env.BOT_TOKEN);
   console.log(process.env.ADMIN_ID);
@@ -28,7 +32,11 @@ if (
   console.log(process.env.NOTIFY_ID_LIST);
   console.log(process.env.RAID_BAN_RADIUS);
   console.log(process.env.WHITELISTED_ROLES);
-  console.log(process.env.CLIENT_ID)
+  console.log(process.env.CLIENT_ID);
+  console.log(process.env.NFT_VERIFY_METHOD_SIGNATURE);
+  console.log(process.env.NFT_CONTRACT);
+  console.log(process.env.NFT_ROLE_ID);
+  console.log(process.env.NFT_TOKEN_ID);
   console.log("failing");
   process.exit(1);
 }
