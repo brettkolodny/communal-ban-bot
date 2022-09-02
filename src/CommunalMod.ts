@@ -81,7 +81,7 @@ export class CommunalMod {
       const commands = [];
 
       const command_data = new SlashCommandBuilder()
-        .setName('verifyNFT')
+        .setName('verifynft')
         .setDescription('Verify the ownership of your Moonbuilder Club NFT')
         .addStringOption((option: { setName: (arg0: string) => { (): any; new(): any; setDescription: { (arg0: string): { (): any; new(): any; setRequired: { (arg0: boolean): any; new(): any; }; }; new(): any; }; }; }) =>
           option.setName('address')
@@ -93,7 +93,7 @@ export class CommunalMod {
             .setRequired(true))
 
       const command_data2 = new SlashCommandBuilder()
-        .setName('verifyNFThelp')
+        .setName('verifynft')
         .setDescription('Instructions for how to verify the ownership of your Moonbuilder Club NFT')
 
       commands.push(command_data.toJSON());
