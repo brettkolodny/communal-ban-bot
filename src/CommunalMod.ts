@@ -22,24 +22,25 @@ const raid_ban_radius = process.env.RAID_BAN_RADIUS
 const whitelisted_roles = process.env.WHITELISTED_ROLES!.split(" ")
 const client_id = process.env.CLIENT_ID
 const guild_id = process.env.SERVER_ID
-const method_signature = '0x70a08231'
+const method_signature = '0x00fdd58e'
 const NFT_contract = '0xe30dBeD16B994C7E563a524827DCa05E28b28f05'
 const NFT_role_ID = "989821037699010560"
+const NFT_token_ID = "1"
 
 
 const providerRPC = {
-  moonbase: {
-    name: 'moonbase-alpha',
-    rpc: 'https://rpc.api.moonbase.moonbeam.network',
-    chainId: 1287, // 0x507 in hex,
+  moonbeam: {
+    name: 'moonbeam',
+    rpc: 'https://rpc.api.moonbeam.network',
+    chainId: 1284, // 0x507 in hex,
   },
 };
 
 const jsonrpcprovider = new ethers.providers.JsonRpcProvider(
-  providerRPC.moonbase.rpc,
+  providerRPC.moonbeam.rpc,
   {
-    chainId: providerRPC.moonbase.chainId,
-    name: providerRPC.moonbase.name,
+    chainId: providerRPC.moonbeam.chainId,
+    name: providerRPC.moonbeam.name,
   }
 )
 
@@ -93,7 +94,7 @@ export class CommunalMod {
             .setRequired(true))
 
       const command_data2 = new SlashCommandBuilder()
-        .setName('verifyhelp')
+        .setName('verifynfthelp')
         .setDescription('Instructions for how to verify the ownership of your Moonbuilder Club NFT')
 
       commands.push(command_data.toJSON());
@@ -158,8 +159,9 @@ export class CommunalMod {
           // Form the RPC request to check for NFT balance
           var request = {
                   "to" : NFT_contract,
-                  "data": method_signature +'000000000000000000000000'+wallet.substring(2)
-           }; 
+                  //We generate the request payload here for the "balanceOf" method       
+                  "data": method_signature + '000000000000000000000000' + wallet.substring(2) +'000000000000000000000000000000000000000000000000000000000000000'+NFT_token_ID
+                }; 
 
           var response;
 
@@ -192,7 +194,7 @@ export class CommunalMod {
       if (interaction.commandName === 'verifyhelp') {
           let embed = new Discord.MessageEmbed()
             .setTitle("How to Verify Your Moonbuilder Club NFT")
-            .setDescription("To verify your Moonbuilder Club NFT, you need to generate a signed message with the same wallet address that you hold the NFT token on. \n\n The signing can be done on [MyEtherWallet](https://www.myetherwallet.com/wallet/sign), [Polkadot JS apps wallet](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fwss.api.moonbase.moonbeam.network#/signing), or [programmatically](https://docs.ethers.io/v5/api/signer/). For more detailed instructions on generating the signed message, please check the [guide](https://www.google.com/) here. \n\n The message you need to sign is your Discord account tag, which is: \n\n " + "```" + interaction.user.tag + "```" +"\n\n "+"After you have created the signed message, you can proceed to use the `/verifynft` bot slash command to verify your ownership and receive the Moonbuilder Club role.");
+            .setDescription("Test");
           interaction.reply({ embeds: [embed] })
       }
     });
