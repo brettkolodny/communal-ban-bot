@@ -79,6 +79,7 @@ export class CommunalMod {
         console.log("Running in DEV");
       }
 
+
       const commands = [];
 
       const command_data = new SlashCommandBuilder()
@@ -106,6 +107,7 @@ export class CommunalMod {
         try {
           console.log('Started refreshing application (/) commands.');
 
+
           await rest.put(
             Routes.applicationGuildCommands(client_id, guild_id),
             { body: commands },
@@ -123,6 +125,7 @@ export class CommunalMod {
     this.client.on('interactionCreate', async interaction => {
 
       if (!interaction.isCommand()) return;
+
 
       // Verify NFT command logic
       if (interaction.commandName === 'verifynft') {
