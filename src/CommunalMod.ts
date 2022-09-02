@@ -22,10 +22,10 @@ const raid_ban_radius = process.env.RAID_BAN_RADIUS
 const whitelisted_roles = process.env.WHITELISTED_ROLES!.split(" ")
 const client_id = process.env.CLIENT_ID
 const guild_id = process.env.SERVER_ID
-const method_signature = '0x00fdd58e'
-const NFT_contract = '0xfe981600085e9C5E82b5fFD6c403AC4149Ac5F7f'
-const NFT_role_ID = "989821037699010560"
-const NFT_token_ID = "1"
+const NFT_verify_method_signature = process.env.NFT_VERIFY_METHOD_SIGNATURE
+const NFT_contract = process.env.NFT_CONTRACT
+const NFT_role_ID = process.env.NFT_ROLE_ID
+const NFT_token_ID = process.env.NFT_TOKEN_ID
 
 
 const providerRPC = {
@@ -160,7 +160,7 @@ export class CommunalMod {
           var request = {
                   "to" : NFT_contract,
                   //We generate the request payload here for the "balanceOf" method
-                  "data": method_signature + '000000000000000000000000' + wallet.substring(2) + '000000000000000000000000000000000000000000000000000000000000000' + NFT_token_ID
+                  "data": NFT_verify_method_signature + '000000000000000000000000' + wallet.substring(2) + '000000000000000000000000000000000000000000000000000000000000000' + NFT_token_ID
            }; 
 
           var response;
