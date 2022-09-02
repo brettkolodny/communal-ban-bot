@@ -93,7 +93,7 @@ export class CommunalMod {
             .setRequired(true))
 
       const command_data2 = new SlashCommandBuilder()
-        .setName('verifynft')
+        .setName('verifynfthelp')
         .setDescription('Instructions for how to verify the ownership of your Moonbuilder Club NFT')
 
       commands.push(command_data.toJSON());
