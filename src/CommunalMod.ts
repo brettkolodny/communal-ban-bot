@@ -148,8 +148,8 @@ export class CommunalMod {
           interaction.reply({ content: 'Address provided is not a valid H160 address.', ephemeral: true })
           return
         }
-        console.log(plaintext)
-        console.log(interaction.options.getString('signature'))
+        //console.log(plaintext)
+        //console.log(interaction.options.getString('signature'))
         try {
           address = ethers.utils.verifyMessage(plaintext, signature);
         }
@@ -157,13 +157,15 @@ export class CommunalMod {
           interaction.reply({ content: 'Signature provided is not a valid ECSDA signature.', ephemeral: true })
           return
         }
-        if (address.toLowerCase == wallet!.toLowerCase) {
+        //console.log(address)
+        //console.log(wallet!)
+        if (address.toLowerCase() === wallet!.toLowerCase()) {
 
           // Form the RPC request to check for NFT balance
           var request = {
                   "to" : NFT_contract,
                   //We generate the request payload here for the "balanceOf" method
-                  "data": NFT_verify_method_signature + '000000000000000000000000' + wallet.substring(2) + '000000000000000000000000000000000000000000000000000000000000000' + NFT_token_ID
+                  "data": NFT_verify_method_signature + '000000000000000000000000' + address.substring(2) + '000000000000000000000000000000000000000000000000000000000000000' + NFT_token_ID
            }; 
 
           var response;
@@ -181,14 +183,14 @@ export class CommunalMod {
             const member = await interaction.guild?.members.fetch(interaction.user.id)
             var role = interaction.guild?.roles.cache.find(r => r.id === NFT_role_ID);
             member?.roles.add(role!)
-            interaction.reply({ content: 'Congratulations! Your Moonbuilder NFT has been verified and you now have the Moonbuilder role and all the associated access!', ephemeral: true })
+            interaction.reply({ content: 'Congratulations! Your Moonbuilder NFT has been verified and you now have the Moonbuilder-pioneer role and all the associated access!', ephemeral: true })
           } else
           {
             interaction.reply({ content: 'Your signature matches, but your wallet address does not have the Moonbuilder NFT. If you believe this is a mistake, please contact an admin.', ephemeral: true })
           }
         }
         else {
-          interaction.reply({ content: 'Your provided signature does not match with the address.', ephemeral: true })
+          interaction.reply({ content: 'Your signature does not match with the provided address.', ephemeral: true })
           return
         }
       }
