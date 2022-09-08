@@ -157,6 +157,7 @@ export class CommunalMod {
           interaction.reply({ content: 'Signature provided is not a valid ECSDA signature.', ephemeral: true })
           return
         }
+        console.log(address)
         if (address.toLowerCase == wallet!.toLowerCase) {
 
           // Form the RPC request to check for NFT balance
@@ -181,7 +182,7 @@ export class CommunalMod {
             const member = await interaction.guild?.members.fetch(interaction.user.id)
             var role = interaction.guild?.roles.cache.find(r => r.id === NFT_role_ID);
             member?.roles.add(role!)
-            interaction.reply({ content: 'Congratulations! Your Moonbuilder NFT has been verified and you now have the Moonbuilder role and all the associated access!', ephemeral: true })
+            interaction.reply({ content: 'Congratulations! Your Moonbuilder NFT has been verified and you now have the Moonbuilder-pioneer role and all the associated access!', ephemeral: true })
           } else
           {
             interaction.reply({ content: 'Your signature matches, but your wallet address does not have the Moonbuilder NFT. If you believe this is a mistake, please contact an admin.', ephemeral: true })
