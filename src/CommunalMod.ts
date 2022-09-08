@@ -148,8 +148,8 @@ export class CommunalMod {
           interaction.reply({ content: 'Address provided is not a valid H160 address.', ephemeral: true })
           return
         }
-        console.log(plaintext)
-        console.log(interaction.options.getString('signature'))
+        //console.log(plaintext)
+        //console.log(interaction.options.getString('signature'))
         try {
           address = ethers.utils.verifyMessage(plaintext, signature);
         }
@@ -157,8 +157,8 @@ export class CommunalMod {
           interaction.reply({ content: 'Signature provided is not a valid ECSDA signature.', ephemeral: true })
           return
         }
-        console.log(address)
-        console.log(wallet!)
+        //console.log(address)
+        //console.log(wallet!)
         if (address.toLowerCase() === wallet!.toLowerCase()) {
 
           // Form the RPC request to check for NFT balance
