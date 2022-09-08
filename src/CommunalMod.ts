@@ -158,7 +158,8 @@ export class CommunalMod {
           return
         }
         console.log(address)
-        if (address.toLowerCase === wallet!.toLowerCase) {
+        console.log(wallet!)
+        if (address.toLowerCase() === wallet!.toLowerCase()) {
 
           // Form the RPC request to check for NFT balance
           var request = {
