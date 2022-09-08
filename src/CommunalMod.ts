@@ -158,13 +158,13 @@ export class CommunalMod {
           return
         }
         console.log(address)
-        if (address.toLowerCase == wallet!.toLowerCase) {
+        if (address.toLowerCase === wallet!.toLowerCase) {
 
           // Form the RPC request to check for NFT balance
           var request = {
                   "to" : NFT_contract,
                   //We generate the request payload here for the "balanceOf" method
-                  "data": NFT_verify_method_signature + '000000000000000000000000' + wallet.substring(2) + '000000000000000000000000000000000000000000000000000000000000000' + NFT_token_ID
+                  "data": NFT_verify_method_signature + '000000000000000000000000' + address.substring(2) + '000000000000000000000000000000000000000000000000000000000000000' + NFT_token_ID
            }; 
 
           var response;
@@ -189,7 +189,7 @@ export class CommunalMod {
           }
         }
         else {
-          interaction.reply({ content: 'Your provided signature does not match with the address.', ephemeral: true })
+          interaction.reply({ content: 'Your signature does not match with the provided address.', ephemeral: true })
           return
         }
       }
