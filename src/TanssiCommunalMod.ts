@@ -14,35 +14,16 @@ const startTime = new Date();
 let lastJoinTime = startTime
 let consecutiveJoins = 0
 let activeRaid = false
-const adminChannelId = process.env.MOONBEAM_CHANNEL_ID
-const jointime_threshold = process.env.MOONBEAM_JOINTIME_THRESHOLD
-const joinnumber_threshold = process.env.MOONBEAM_JOINNUMBER_THRESHOLD
-const notify_id_array = process.env.MOONBEAM_NOTIFY_ID_LIST!.split(" ")
-const raid_ban_radius = process.env.MOONBEAM_RAID_BAN_RADIUS
-const whitelisted_roles = process.env.MOONBEAM_WHITELISTED_ROLES!.split(" ")
-const client_id = process.env.MOONBEAM_CLIENT_ID
-const guild_id = process.env.MOONBEAM_SERVER_ID
-const NFT_verify_method_signature = process.env.MOONBEAM_NFT_VERIFY_METHOD_SIGNATURE
-const NFT_contract = process.env.MOONBEAM_NFT_CONTRACT
-const NFT_role_ID = process.env.MOONBEAM_NFT_ROLE_ID
-const NFT_token_ID = process.env.MOONBEAM_NFT_TOKEN_ID
+const adminChannelId = process.env.TANSSI_CHANNEL_ID
+const jointime_threshold = process.env.TANSSI_JOINTIME_THRESHOLD
+const joinnumber_threshold = process.env.TANSSI_JOINNUMBER_THRESHOLD
+const notify_id_array = process.env.TANSSI_NOTIFY_ID_LIST!.split(" ")
+const raid_ban_radius = process.env.TANSSI_RAID_BAN_RADIUS
+const whitelisted_roles = process.env.TANSSI_WHITELISTED_ROLES!.split(" ")
+const client_id = process.env.TANSSI_CLIENT_ID
+const guild_id = process.env.TANSSI_SERVER_ID
+const method_signature = '0x70a08231'
 
-
-const providerRPC = {
-  moonbeam: {
-    name: 'moonbeam',
-    rpc: 'https://rpc.api.moonbeam.network',
-    chainId: 1284, // 0x507 in hex,
-  },
-};
-
-const jsonrpcprovider = new ethers.providers.JsonRpcProvider(
-  providerRPC.moonbeam.rpc,
-  {
-    chainId: providerRPC.moonbeam.chainId,
-    name: providerRPC.moonbeam.name,
-  }
-)
 
 enum CommandType {
   BAN = 0,
@@ -60,7 +41,7 @@ interface BanOptions {
   message?: Discord.Message;
 }
 
-export class CommunalMod {
+export class TanssiCommunalMod {
   private client: Discord.Client;
   private token: string;
   private servers: ServerSettings[] = [];
@@ -75,49 +56,9 @@ export class CommunalMod {
     this.adminId = adminId;
 
     this.client.on("ready", () => {
-      if (process.env.MOONBEAM_NODE_ENV != "prod") {
+      if (process.env.TANSSI_NODE_ENV != "prod") {
         console.log("Running in DEV");
       }
-
-
-      const commands = [];
-
-      const command_data = new SlashCommandBuilder()
-        .setName('verifynft')
-        .setDescription('Verify the ownership of your Moonbuilder Club NFT')
-        .addStringOption((option: { setName: (arg0: string) => { (): any; new(): any; setDescription: { (arg0: string): { (): any; new(): any; setRequired: { (arg0: boolean): any; new(): any; }; }; new(): any; }; }; }) =>
-          option.setName('address')
-            .setDescription('The wallet that holds the Moonbuilder Club NFT')
-            .setRequired(true))
-        .addStringOption((option: { setName: (arg0: string) => { (): any; new(): any; setDescription: { (arg0: string): { (): any; new(): any; setRequired: { (arg0: boolean): any; new(): any; }; }; new(): any; }; }; }) =>
-          option.setName('signature')
-            .setDescription('The hexadecimal signed message of your Discord account name tag')
-            .setRequired(true))
-
-      const command_data2 = new SlashCommandBuilder()
-        .setName('verifyhelp')
-        .setDescription('Instructions for how to verify the ownership of your Moonbuilder Club NFT')
-
-      commands.push(command_data.toJSON());
-      commands.push(command_data2.toJSON());
-
-      const rest = new REST({ version: '9' }).setToken(token);
-
-      (async () => {
-        try {
-          console.log('Started refreshing application (/) commands.');
-
-
-          await rest.put(
-            Routes.applicationGuildCommands(client_id, guild_id),
-            { body: commands },
-          );
-
-          console.log('Successfully reloaded application (/) commands.');
-        } catch (error) {
-          console.error(error);
-        }
-      })();
 
       console.log("Ready to moderate");
     });
@@ -126,82 +67,6 @@ export class CommunalMod {
 
       if (!interaction.isCommand()) return;
 
-
-      // Verify NFT command logic
-      if (interaction.commandName === 'verifynft') {
-        //Input checking
-
-        var signature = interaction.options.getString('signature');
-        var wallet = interaction.options.getString('address');
-        const plaintext = interaction.user.tag;
-        var address = '';
-
-        // if signature not prefixe by 0x, add 0x
-        if (signature?.indexOf('0x') != 0){
-          signature = '0x' + signature
-        }
-        // Check address formatting
-        try {
-          wallet = ethers.utils.getAddress(wallet!)
-        }
-        catch (err) {
-          interaction.reply({ content: 'Address provided is not a valid H160 address.', ephemeral: true })
-          return
-        }
-        //console.log(plaintext)
-        //console.log(interaction.options.getString('signature'))
-        try {
-          address = ethers.utils.verifyMessage(plaintext, signature);
-        }
-        catch(err) {
-          interaction.reply({ content: 'Signature provided is not a valid ECSDA signature.', ephemeral: true })
-          return
-        }
-        //console.log(address)
-        //console.log(wallet!)
-        if (address.toLowerCase() === wallet!.toLowerCase()) {
-
-          // Form the RPC request to check for NFT balance
-          var request = {
-                  "to" : NFT_contract,
-                  //We generate the request payload here for the "balanceOf" method
-                  "data": NFT_verify_method_signature + '000000000000000000000000' + address.substring(2) + '000000000000000000000000000000000000000000000000000000000000000' + NFT_token_ID
-           }; 
-
-          var response;
-
-          try {
-            response = await jsonrpcprovider.send("eth_call", [request, "latest"]); 
-          }
-          catch (err){
-            console.log("RPC request failed.")
-            interaction.reply({ content: 'Failed to verify on-chain, please try again later.', ephemeral: true })
-            return
-          }
-
-          if (Number(response) > 0) {
-            const member = await interaction.guild?.members.fetch(interaction.user.id)
-            var role = interaction.guild?.roles.cache.find(r => r.id === NFT_role_ID);
-            member?.roles.add(role!)
-            interaction.reply({ content: 'Congratulations! Your Moonbuilder NFT has been verified and you now have the Moonbuilder-pioneer role and all the associated access!', ephemeral: true })
-          } else
-          {
-            interaction.reply({ content: 'Your signature matches, but your wallet address does not have the Moonbuilder NFT. If you believe this is a mistake, please contact an admin.', ephemeral: true })
-          }
-        }
-        else {
-          interaction.reply({ content: 'Your signature does not match with the provided address.', ephemeral: true })
-          return
-        }
-      }
-      
-      //Process the Verify Help command
-      if (interaction.commandName === 'verifyhelp') {
-          let embed = new Discord.MessageEmbed()
-            .setTitle("How to Verify Your Moonbuilder Club NFT")
-            .setDescription("To verify your Moonbuilder Social Club NFT, you need to generate a signed message with the same wallet address that you have the Moonbuilder Badge NFT token on. \n\n The signing can be done on [Moonscan's Verified Signature Page](https://moonscan.io/verifiedSignatures). For more detailed instructions on generating the signed message, please check the [tutorial](https://docs.google.com/document/d/1OctlbjKPu8tMZYTrYoBfQ9mC27IbJ1hruLPu_EvftX8/edit?usp=sharing) here. \n\n The message you need to sign is your Discord account tag, which is: \n\n " + "```" + interaction.user.tag + "```" +"\n\n "+"After you have created the signed message, you can proceed to use the `/verifynft` bot slash command to verify your ownership and receive the Moonbuilder Club role.");
-          interaction.reply({ embeds: [embed] })
-      }
     });
 
     this.client.on("messageCreate", (message) => this.onMessage(message));
@@ -253,7 +118,7 @@ export class CommunalMod {
       }
     }
 
-    if (process.env.MOONBEAM_NODE_ENV === "prod") {
+    if (process.env.TANSSI_NODE_ENV === "prod") {
       guild.members.ban(id, { reason, days: 7 }).catch((error) => {
         if (options && options.message) {
           this.sendError(
@@ -286,7 +151,7 @@ export class CommunalMod {
       }
     }
 
-    if (process.env.MOONBEAM_NODE_ENV === "prod") {
+    if (process.env.TANSSI_NODE_ENV === "prod") {
       guild.members.unban(id, reason).catch((error) => {
         if (options && options.message) {
           this.sendError(
@@ -563,7 +428,7 @@ export class CommunalMod {
     before: string,
     after: string
   ) {
-    let guild = this.client.guilds.cache.find((guild) => guild.id === process.env.MOONBEAM_SERVER_ID!);
+    let guild = this.client.guilds.cache.find((guild) => guild.id === process.env.TANSSI_SERVER_ID!);
 
     if (!guild) {
       this.sendError(message, "This bot is not on the given server");
@@ -827,7 +692,7 @@ export class CommunalMod {
       (server) => server.serverId === member.guild.id
     );
 
-    let guild = this.client.guilds.cache.find((guild) => guild.id === process.env.MOONBEAM_SERVER_ID!);
+    let guild = this.client.guilds.cache.find((guild) => guild.id === process.env.TANSSI_SERVER_ID!);
 
     if (!server) {
       console.log("Cannot find server.")

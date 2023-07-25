@@ -1,54 +1,88 @@
-import { ServerSettings, CommunalMod } from "../src";
+// Load and validate config
+
 import dotenv from "dotenv";
 
 dotenv.config({ path: "test/.env" });
+assert_configuration_ok();
 
-if (
-  !process.env.BOT_TOKEN ||
-  !process.env.ADMIN_ID ||
-  !process.env.SERVER_ID ||
-  !process.env.CHANNEL_ID ||
-  !process.env.BANNED_WORDS ||
-  !process.env.JOINNUMBER_THRESHOLD ||
-  !process.env.JOINTIME_THRESHOLD ||
-  !process.env.NODE_ENV ||
-  !process.env.NOTIFY_ID_LIST ||
-  !process.env.RAID_BAN_RADIUS ||
-  !process.env.WHITELISTED_ROLES ||
-  !process.env.CLIENT_ID ||
-  !process.env.NFT_VERIFY_METHOD_SIGNATURE ||
-  !process.env.NFT_CONTRACT ||
-  !process.env.NFT_ROLE_ID ||
-  !process.env.NFT_TOKEN_ID
-) {
-  console.log(process.env.BOT_TOKEN);
-  console.log(process.env.ADMIN_ID);
-  console.log(process.env.SERVER_ID);
-  console.log(process.env.CHANNEL_ID);
-  console.log(process.env.BANNED_WORDS);
-  console.log(process.env.JOINNUMBER_THRESHOLD);
-  console.log(process.env.JOINTIME_THRESHOLD);
-  console.log(process.env.NODE_ENV);
-  console.log(process.env.NOTIFY_ID_LIST);
-  console.log(process.env.RAID_BAN_RADIUS);
-  console.log(process.env.WHITELISTED_ROLES);
-  console.log(process.env.CLIENT_ID);
-  console.log(process.env.NFT_VERIFY_METHOD_SIGNATURE);
-  console.log(process.env.NFT_CONTRACT);
-  console.log(process.env.NFT_ROLE_ID);
-  console.log(process.env.NFT_TOKEN_ID);
-  console.log("failing");
-  process.exit(1);
-}
+// Configure Moonbeam & Tanssi servers
 
-const testServer = new ServerSettings(process.env.SERVER_ID, {
-  whitelisted: true, blacklist: process.env.BANNED_WORDS.split(" ")
+import { ServerSettings, CommunalMod, TanssiCommunalMod } from "../src";
+
+const moonbeamServer = new ServerSettings(process.env.MOONBEAM_SERVER_ID!, {
+  whitelisted: true, 
+  blacklist: process.env.MOONBEAM_BANNED_WORDS!.split(" "),
+  allowedChannel: process.env.MOONBEAM_CHANNEL_ID!
 });
 
-console.log("banned word list loaded: " + process.env.BANNED_WORDS)
-testServer.allowedChannel = process.env.CHANNEL_ID;
+const tanssiServer = new ServerSettings(process.env.TANSSI_SERVER_ID!, {
+  whitelisted: true, 
+  blacklist: process.env.TANSSI_BANNED_WORDS!.split(" "),
+  allowedChannel: process.env.TANSSI_CHANNEL_ID!
+});
 
-const mod = new CommunalMod(process.env.BOT_TOKEN, process.env.ADMIN_ID);
-mod.addServer(testServer);
+// Run bot
 
+const mod = new CommunalMod(process.env.MOONBEAM_BOT_TOKEN!, process.env.MOONBEAM_ADMIN_ID!);
+mod.addServer(moonbeamServer);
 mod.login();
+
+const modTanssi = new TanssiCommunalMod(process.env.TANSSI_BOT_TOKEN!, process.env.TANSSI_ADMIN_ID!);
+modTanssi.addServer(tanssiServer);
+modTanssi.login();
+
+console.log("This is the end");
+
+// Support functions
+
+function assert_configuration_ok() {
+  let moonbeam_is_valid = validate_moonbeam();
+
+  if (!moonbeam_is_valid) {
+    console.log("Moonbeam config is not valid, Check env values");
+    console.log(process.env);  
+    process.exit(1);
+  }
+  
+  // let tanssi_is_valid = validate_tanssi();
+  
+  // if (!tanssi_is_valid) {
+  //   console.log("Tanssi config is not valid, Check env values");
+  //   console.log(process.env);  
+  //   process.exit(1);
+  // }
+
+}
+
+function validate_moonbeam(): boolean {
+
+  return 'MOONBEAM_BOT_TOKEN' in process.env &&
+      'MOONBEAM_ADMIN_ID' in process.env &&
+      'MOONBEAM_SERVER_ID' in process.env &&
+      'MOONBEAM_CHANNEL_ID' in process.env &&
+      'MOONBEAM_BANNED_WORDS' in process.env &&
+      'MOONBEAM_JOINNUMBER_THRESHOLD' in process.env &&
+      'MOONBEAM_JOINTIME_THRESHOLD' in process.env &&
+      'MOONBEAM_NODE_ENV' in process.env &&
+      'MOONBEAM_NOTIFY_ID_LIST' in process.env &&
+      'MOONBEAM_RAID_BAN_RADIUS' in process.env &&
+      'MOONBEAM_WHITELISTED_ROLES' in process.env &&
+      'MOONBEAM_CLIENT_ID' in process.env;
+}
+
+function validate_tanssi(): boolean {
+
+  return 'TANSSI_BOT_TOKEN' in process.env &&
+    'TANSSI_ADMIN_ID' in process.env &&
+    'TANSSI_SERVER_ID' in process.env &&
+    'TANSSI_CHANNEL_ID' in process.env &&
+    'TANSSI_BANNED_WORDS' in process.env &&
+    'TANSSI_JOINNUMBER_THRESHOLD' in process.env &&
+    'TANSSI_JOINTIME_THRESHOLD' in process.env &&
+    'TANSSI_NODE_ENV' in process.env &&
+    'TANSSI_NOTIFY_ID_LIST' in process.env &&
+    'TANSSI_RAID_BAN_RADIUS' in process.env &&
+    'TANSSI_WHITELISTED_ROLES' in process.env &&
+    'TANSSI_CLIENT_ID' in process.env;
+
+}
