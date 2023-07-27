@@ -44,13 +44,13 @@ function assert_configuration_ok() {
     process.exit(1);
   }
   
-  // let tanssi_is_valid = validate_tanssi();
+  let tanssi_is_valid = validate_tanssi();
   
-  // if (!tanssi_is_valid) {
-  //   console.log("Tanssi config is not valid, Check env values");
-  //   console.log(process.env);  
-  //   process.exit(1);
-  // }
+  if (!tanssi_is_valid) {
+    console.log("Tanssi config is not valid, Check env values");
+    console.log(process.env);  
+    process.exit(1);
+  }
 
 }
 
