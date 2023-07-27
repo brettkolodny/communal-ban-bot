@@ -22,7 +22,6 @@ const raid_ban_radius = process.env.TANSSI_RAID_BAN_RADIUS
 const whitelisted_roles = process.env.TANSSI_WHITELISTED_ROLES!.split(" ")
 const client_id = process.env.TANSSI_CLIENT_ID
 const guild_id = process.env.TANSSI_SERVER_ID
-const method_signature = '0x70a08231'
 
 
 enum CommandType {
