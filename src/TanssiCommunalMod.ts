@@ -274,7 +274,7 @@ export class TanssiCommunalMod {
   }
 
   private async banCommand(message: Discord.Message) {
-    const idPattern = /\d{18}/g;
+    const idPattern = /\d{17,20}/g;
     const usernamePattern = /--username\s*/g;
     const reasonPattern = /--reason\s*.*/g;
 
@@ -370,7 +370,7 @@ export class TanssiCommunalMod {
   }
 
   private async unbanCommand(message: Discord.Message) {
-    const idPattern = /\d{18}/g;
+    const idPattern = /\d{17,20}/g;
     const reasonPattern = /--reason\s*.*/g;
 
     const ids = message.content.match(idPattern);
@@ -626,11 +626,11 @@ export class TanssiCommunalMod {
     }
 
     const banCommandPattern =
-      /\s*!ban (--username\s+)?(\d{18}\s*)+(--reason\s*.*)?/g;
+      /\s*!ban (--username\s+)?(\d{17,20}\s*)+(--reason\s*.*)?/g;
     const serverCommandPattern = /\s*!servers\s*/g;
-    const unbanCommandPattern = /\s*!unban (\d{18}\s*)+/g;
+    const unbanCommandPattern = /\s*!unban (\d{17,20}\s*)+/g;
     const raidCommandPattern =
-      /\s*!raid\s+--user\s+(\d{18})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
+      /\s*!raid\s+--user\s+(\d{17,20})\s+--before\s+(\d+)\s+--after\s+(\d+)\s*/;
 
     if (banCommandPattern.test(msgContent)) {
       this.banCommand(message);
